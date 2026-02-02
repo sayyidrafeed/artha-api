@@ -1,0 +1,41 @@
+{
+  "name": "artha-api",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "bun run src/db/seed.ts",
+    "lint": "oxlint . --config .oxlintrc.json",
+    "lint:fix": "oxlint . --config .oxlintrc.json --fix",
+    "format": "oxfmt . --config .oxfmt.json",
+    "format:check": "oxfmt . --config .oxfmt.json --check",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run lint && bun run format:check",
+    "ci:install": "npm ci",
+    "ci:build": "npm run build",
+    "ci:test": "bun test"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.9.0",
+    "better-auth": "^1.4.18",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.7",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "drizzle-kit": "^0.30.0",
+    "oxlint": "^0.15.0",
+    "oxfmt": "^0.1.0",
+    "typescript": "^5.3.0"
+  }
+}
