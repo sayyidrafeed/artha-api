@@ -1,7 +1,11 @@
-import { db } from '@/db';
-import { categories, transactions } from '@/db/schema';
-import type { CreateCategoryInput, UpdateCategoryInput, Category } from './schema';
-import { eq, sql } from 'drizzle-orm';
+import { db } from "@/db"
+import { categories, transactions } from "@/db/schema"
+import type {
+  CreateCategoryInput,
+  UpdateCategoryInput,
+  Category,
+} from "./schema"
+import { eq, sql } from "drizzle-orm"
 
 export class CategoryService {
   /**
@@ -16,7 +20,7 @@ export class CategoryService {
         createdAt: categories.createdAt,
       })
       .from(categories)
-      .orderBy(categories.name);
+      .orderBy(categories.name)
   }
 
   /**
@@ -32,34 +36,37 @@ export class CategoryService {
       })
       .from(categories)
       .where(eq(categories.id, id))
-      .limit(1);
+      .limit(1)
 
-    return result[0] ?? null;
+    return result[0] ?? null
   }
 
   /**
    * Create a new category
    */
   async create(input: CreateCategoryInput): Promise<Category> {
-    const result = await db.insert(categories).values(input).returning();
-    return result[0];
+    const result = await db.insert(categories).values(input).returning()
+    return result[0]
   }
 
   /**
    * Update a category
    */
-  async update(id: string, input: UpdateCategoryInput): Promise<Category | null> {
+  async update(
+    id: string,
+    input: UpdateCategoryInput,
+  ): Promise<Category | null> {
     const result = await db
       .update(categories)
       .set(input)
       .where(eq(categories.id, id))
-      .returning();
+      .returning()
 
     if (result.length === 0) {
-      return null;
+      return null
     }
 
-    return result[0];
+    return result[0]
   }
 
   /**
@@ -71,19 +78,19 @@ export class CategoryService {
     const transactionCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(transactions)
-      .where(eq(transactions.categoryId, id));
+      .where(eq(transactions.categoryId, id))
 
     if (transactionCount[0]?.count && transactionCount[0].count > 0) {
-      return false;
+      return false
     }
 
     const result = await db
       .delete(categories)
       .where(eq(categories.id, id))
-      .returning();
+      .returning()
 
-    return result.length > 0;
+    return result.length > 0
   }
 }
 
-export const categoryService = new CategoryService();
+export const categoryService = new CategoryService()

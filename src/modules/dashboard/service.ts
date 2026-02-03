@@ -1,29 +1,29 @@
-import { db } from '@/db';
-import { transactions, categories } from '@/db/schema';
-import { eq, and, gte, lte, sql } from 'drizzle-orm';
-import type { DashboardFilter } from './schema';
+import { db } from "@/db"
+import { transactions, categories } from "@/db/schema"
+import { eq, and, gte, lte, sql } from "drizzle-orm"
+import type { DashboardFilter } from "./schema"
 
 interface MonthlySummary {
-  year: number;
-  month: number | undefined;
-  incomeCents: number;
-  expenseCents: number;
-  balanceCents: number;
+  year: number
+  month: number | undefined
+  incomeCents: number
+  expenseCents: number
+  balanceCents: number
 }
 
 interface CategoryAggregation {
-  categoryId: string;
-  categoryName: string;
-  type: 'income' | 'expense';
-  totalCents: number;
-  transactionCount: number;
+  categoryId: string | null
+  categoryName: string | null
+  type: "income" | "expense" | null
+  totalCents: number
+  transactionCount: number
 }
 
 interface DashboardByCategory {
-  year: number;
-  month: number | undefined;
-  income: CategoryAggregation[];
-  expense: CategoryAggregation[];
+  year: number
+  month: number | undefined
+  income: CategoryAggregation[]
+  expense: CategoryAggregation[]
 }
 
 export class DashboardService {
@@ -31,23 +31,23 @@ export class DashboardService {
    * Get monthly income/expense/balance summary
    */
   async getSummary(filter: DashboardFilter): Promise<MonthlySummary> {
-    const { year, month } = filter;
+    const { year, month } = filter
 
-    let dateCondition;
+    let dateCondition
     if (month) {
-      const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+      const startDate = `${year}-${String(month).padStart(2, "0")}-01`
+      const endDate = `${year}-${String(month).padStart(2, "0")}-31`
       dateCondition = and(
         gte(transactions.transactionDate, startDate),
         lte(transactions.transactionDate, endDate),
-      );
+      )
     } else {
-      const startDate = `${year}-01-01`;
-      const endDate = `${year}-12-31`;
+      const startDate = `${year}-01-01`
+      const endDate = `${year}-12-31`
       dateCondition = and(
         gte(transactions.transactionDate, startDate),
         lte(transactions.transactionDate, endDate),
-      );
+      )
     }
 
     const result = await db
@@ -57,11 +57,11 @@ export class DashboardService {
       })
       .from(transactions)
       .leftJoin(categories, eq(transactions.categoryId, categories.id))
-      .where(dateCondition);
+      .where(dateCondition)
 
-    const incomeCents = result[0]?.incomeCents ?? 0;
-    const expenseCents = result[0]?.expenseCents ?? 0;
-    const balanceCents = incomeCents - expenseCents;
+    const incomeCents = result[0]?.incomeCents ?? 0
+    const expenseCents = result[0]?.expenseCents ?? 0
+    const balanceCents = incomeCents - expenseCents
 
     return {
       year,
@@ -69,30 +69,30 @@ export class DashboardService {
       incomeCents,
       expenseCents,
       balanceCents,
-    };
+    }
   }
 
   /**
    * Get transactions aggregated by category
    */
   async getByCategory(filter: DashboardFilter): Promise<DashboardByCategory> {
-    const { year, month } = filter;
+    const { year, month } = filter
 
-    let dateCondition;
+    let dateCondition
     if (month) {
-      const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+      const startDate = `${year}-${String(month).padStart(2, "0")}-01`
+      const endDate = `${year}-${String(month).padStart(2, "0")}-31`
       dateCondition = and(
         gte(transactions.transactionDate, startDate),
         lte(transactions.transactionDate, endDate),
-      );
+      )
     } else {
-      const startDate = `${year}-01-01`;
-      const endDate = `${year}-12-31`;
+      const startDate = `${year}-01-01`
+      const endDate = `${year}-12-31`
       dateCondition = and(
         gte(transactions.transactionDate, startDate),
         lte(transactions.transactionDate, endDate),
-      );
+      )
     }
 
     const result = await db
@@ -107,18 +107,18 @@ export class DashboardService {
       .leftJoin(categories, eq(transactions.categoryId, categories.id))
       .where(dateCondition)
       .groupBy(categories.id, categories.name, categories.type)
-      .orderBy(sql`SUM(${transactions.amountCents}) DESC`);
+      .orderBy(sql`SUM(${transactions.amountCents}) DESC`)
 
-    const income = result.filter((r) => r.type === 'income');
-    const expense = result.filter((r) => r.type === 'expense');
+    const income = result.filter((r) => r.type === "income")
+    const expense = result.filter((r) => r.type === "expense")
 
     return {
       year,
       month,
       income,
       expense,
-    };
+    }
   }
 }
 
-export const dashboardService = new DashboardService();
+export const dashboardService = new DashboardService()

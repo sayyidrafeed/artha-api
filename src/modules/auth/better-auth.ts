@@ -1,10 +1,10 @@
-import { betterAuth } from 'better-auth';
-import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { db } from '@/db';
+import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { db } from "@/db"
 
-export const auth = betterAuth({
+const authInstance = betterAuth({
   database: drizzleAdapter(db, {
-    provider: 'pg',
+    provider: "pg",
   }),
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.BETTER_AUTH_URL!,
@@ -30,14 +30,17 @@ export const auth = betterAuth({
   // Cookie configuration
   cookies: {
     sessionToken: {
-      name: 'artha.session',
+      name: "artha.session",
       options: {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
-        path: '/',
+        sameSite: "strict",
+        path: "/",
         maxAge: 60 * 60 * 24 * 7, // 7 days
       },
     },
   },
-});
+})
+
+export const auth = authInstance
+export const authHandler = authInstance.handler

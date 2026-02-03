@@ -1,19 +1,19 @@
-import type { Context } from 'hono';
-import type { PaginationMeta } from '../schemas/common';
+import type { Context } from "hono"
+import type { PaginationMeta } from "../schemas/common"
 
 interface SuccessResponse<T> {
-  success: true;
-  data: T;
-  meta?: PaginationMeta;
+  success: true
+  data: T
+  meta?: PaginationMeta
 }
 
 interface ErrorResponse {
-  success: false;
+  success: false
   error: {
-    code: string;
-    message: string;
-    details?: unknown;
-  };
+    code: string
+    message: string
+    details?: unknown
+  }
 }
 
 export function success<T>(
@@ -21,26 +21,26 @@ export function success<T>(
   data: T,
   meta?: PaginationMeta,
 ): Response {
-  const response: SuccessResponse<T> = { success: true, data };
+  const response: SuccessResponse<T> = { success: true, data }
   if (meta) {
-    response.meta = meta;
+    response.meta = meta
   }
-  return c.json(response);
+  return c.json(response)
 }
 
 export function error(
   c: Context,
   code: string,
   message: string,
-  status: number = 500,
+  status: 400 | 401 | 403 | 404 | 409 | 500 = 500,
   details?: unknown,
 ): Response {
   const response: ErrorResponse = {
     success: false,
     error: { code, message },
-  };
-  if (details !== undefined) {
-    response.error.details = details;
   }
-  return c.json(response, status);
+  if (details !== undefined) {
+    response.error.details = details
+  }
+  return c.json(response, status)
 }

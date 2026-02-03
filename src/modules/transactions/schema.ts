@@ -1,26 +1,26 @@
-import { z } from 'zod';
+import { z } from "zod"
 
 // Transaction type enum
-export const transactionTypeSchema = z.enum(['income', 'expense']);
+export const transactionTypeSchema = z.enum(["income", "expense"])
 
 // Create transaction schema
 export const createTransactionSchema = z.object({
-  categoryId: z.string().uuid('Invalid category ID'),
+  categoryId: z.string().uuid("Invalid category ID"),
   amount: z
     .number()
-    .positive('Amount must be positive')
-    .max(999999999.99, 'Amount is too large'),
+    .positive("Amount must be positive")
+    .max(999999999.99, "Amount is too large"),
   description: z
     .string()
-    .min(1, 'Description is required')
-    .max(500, 'Description must be less than 500 characters'),
+    .min(1, "Description is required")
+    .max(500, "Description must be less than 500 characters"),
   transactionDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
-});
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+})
 
 // Update transaction schema (all fields optional)
-export const updateTransactionSchema = createTransactionSchema.partial();
+export const updateTransactionSchema = createTransactionSchema.partial()
 
 // Transaction filter/query schema
 export const transactionFilterSchema = z.object({
@@ -36,24 +36,24 @@ export const transactionFilterSchema = z.object({
     .optional(),
   categoryId: z.string().uuid().optional(),
   type: transactionTypeSchema.optional(),
-});
+})
 
 // Transaction response schema
 export const transactionSchema = z.object({
   id: z.string().uuid(),
   categoryId: z.string().uuid(),
-  categoryName: z.string(),
-  categoryType: transactionTypeSchema,
+  categoryName: z.string().nullable(),
+  categoryType: transactionTypeSchema.nullable(),
   amountCents: z.number().int().positive(),
   description: z.string(),
   transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
 
 // Types
-export type TransactionType = z.infer<typeof transactionTypeSchema>;
-export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
-export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
-export type TransactionFilter = z.infer<typeof transactionFilterSchema>;
-export type Transaction = z.infer<typeof transactionSchema>;
+export type TransactionType = z.infer<typeof transactionTypeSchema>
+export type CreateTransactionInput = z.infer<typeof createTransactionSchema>
+export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>
+export type TransactionFilter = z.infer<typeof transactionFilterSchema>
+export type Transaction = z.infer<typeof transactionSchema>

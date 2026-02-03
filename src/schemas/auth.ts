@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod"
 
 // OAuth provider schema
-export const oauthProviderSchema = z.enum(['github', 'google']);
+export const oauthProviderSchema = z.enum(["github", "google"])
 
 // User schema (from Better Auth)
 export const userSchema = z.object({
@@ -12,7 +12,7 @@ export const userSchema = z.object({
   emailVerified: z.boolean(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-});
+})
 
 // Session schema (from Better Auth)
 export const sessionSchema = z.object({
@@ -24,16 +24,16 @@ export const sessionSchema = z.object({
   userAgent: z.string().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
-});
+})
 
 // Sign in with email (development only)
 export const emailSignInSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+})
 
 // Types
-export type OAuthProvider = z.infer<typeof oauthProviderSchema>;
-export type User = z.infer<typeof userSchema>;
-export type Session = z.infer<typeof sessionSchema>;
-export type EmailSignInInput = z.infer<typeof emailSignInSchema>;
+export type OAuthProvider = z.infer<typeof oauthProviderSchema>
+export type User = z.infer<typeof userSchema>
+export type Session = z.infer<typeof sessionSchema>
+export type EmailSignInInput = z.infer<typeof emailSignInSchema>
