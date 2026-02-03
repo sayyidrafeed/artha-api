@@ -33,11 +33,11 @@ const authInstance = betterAuth({
       name: "artha.session",
       options: {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7, // 7 days
-        domain: ".artha.sayyidrafee.com",
+        ...(process.env.COOKIE_DOMAIN && { domain: process.env.COOKIE_DOMAIN }),
       },
     },
   },
