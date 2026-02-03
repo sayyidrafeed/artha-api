@@ -1,0 +1,7 @@
+[run]
+# Read .env files automatically
+read = [".env"]
+
+[resolve]
+# Path aliases matching tsconfig.json
+"@/*" = ["./src/*"]
