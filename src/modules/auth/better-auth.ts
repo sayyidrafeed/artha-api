@@ -9,6 +9,9 @@ const authInstance = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.BETTER_AUTH_URL!,
 
+  // Trusted origins for OAuth callbacks and CSRF protection
+  trustedOrigins: [process.env.FRONTEND_URL || "https://artha.sayyidrafee.com"],
+
   // OAuth Providers
   socialProviders: {
     github: {
