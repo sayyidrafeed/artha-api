@@ -362,24 +362,39 @@ const amountCents = dollarsToCents(25.99); // 2599
 
 ## Deployment Constraints (Vercel)
 
+### Build Toolchain
+- **Bundler**: tsup (esbuild-based)
+- **Path Aliases**: Resolved at build time by tsup
+- **Output**: Single ESM bundle in dist/
+- **Build Command**: `npm run build`
+- **CI Build Command**: `npm run ci:build` (includes type check + build)
+
 ### Build Configuration
 ```json
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "src/index.ts",
-      "use": "@vercel/node"
+  "buildCommand": "npm run ci:build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "installCommand": "npm ci",
+  "env": {
+    "NODE_VERSION": "24.x",
+    "NODE_OPTIONS": "--enable-source-maps --no-warnings"
+  },
+  "functions": {
+    "dist/index.js": {
+      "memory": 256,
+      "maxDuration": 10
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/src/index.ts"
+      "dest": "/dist/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/src/index.ts"
+      "dest": "/dist/index.js"
     }
   ]
 }
