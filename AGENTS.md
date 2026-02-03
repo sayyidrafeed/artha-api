@@ -241,19 +241,21 @@ export async function someOperation(input: SomeInput): Promise<SomeResult> {
 
 ## Import Patterns
 
-### Absolute Imports (MANDATORY)
-Use `@/` alias for all internal imports:
+### Import Paths (ALLOWED)
+Prefer `@/` alias for internal imports when a bundler resolves aliases at build time.
+Relative imports are allowed when the runtime cannot resolve aliases.
 
 ```typescript
-// CORRECT
+// CORRECT (alias-based)
 import { ownerOnlyMiddleware } from '@/modules/auth';
 import { db } from '@/db';
 import { success, error } from '@/lib/response';
 import type { Transaction } from '@/schemas/transaction';
 
-// INCORRECT
-import { ownerOnlyMiddleware } from '../modules/auth';
-import { db } from '../db';
+// CORRECT (relative)
+import { ownerOnlyMiddleware } from '../auth';
+import { db } from '../../db';
+import { success, error } from '../../lib/response';
 ```
 
 ### Type Imports (MANDATORY)
@@ -431,10 +433,9 @@ Test critical paths manually before pushing.
 2. Add `user_id` to application tables
 3. Use `any` type
 4. Skip Zod validation
-5. Use relative imports (`../`)
-6. Skip explicit return types on exported functions
-7. Use `console.log` in production (use `console.info` or `console.error`)
-8. Expose stack traces in production errors
+5. Skip explicit return types on exported functions
+6. Use `console.log` in production (use `console.info` or `console.error`)
+7. Expose stack traces in production errors
 
 ## AI Assistant Checklist
 
@@ -443,7 +444,7 @@ Before generating any code:
 - [ ] Are all inputs validated with Zod?
 - [ ] Are explicit return types provided?
 - [ ] Are type imports marked with `type`?
-- [ ] Are absolute imports used (`@/`)?
+- [ ] Are import paths aligned with repo rules (alias or relative)?
 - [ ] Does it follow the module boundary rules?
 - [ ] Will it pass oxlint?
 - [ ] Will it pass oxfmt?

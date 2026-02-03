@@ -1,13 +1,13 @@
 import { Hono } from "hono"
 import { zValidator } from "@hono/zod-validator"
-import { ownerOnlyMiddleware } from "@/modules/auth"
+import { ownerOnlyMiddleware } from "../auth"
 import { transactionService } from "./service"
 import {
   createTransactionSchema,
   updateTransactionSchema,
   transactionFilterSchema,
 } from "./schema"
-import { success, error } from "@/lib/response"
+import { success, error } from "../../lib/response"
 
 const app = new Hono()
 

@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory"
 import { auth } from "./better-auth"
-import { error } from "@/lib/response"
+import { error } from "../../lib/response"
 
 // Owner email from environment
 const OWNER_EMAIL = process.env.OWNER_EMAIL!

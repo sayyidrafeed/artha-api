@@ -1,12 +1,12 @@
 import { Hono } from "hono"
-import { corsMiddleware } from "@/middleware/cors"
-import { loggingMiddleware } from "@/middleware/logging"
-import { authRateLimit, apiRateLimit } from "@/middleware/rate-limit"
-import { errorHandler } from "@/middleware/error-handler"
-import { auth } from "@/modules/auth"
-import transactionsRoutes from "@/modules/transactions/routes"
-import categoriesRoutes from "@/modules/categories/routes"
-import dashboardRoutes from "@/modules/dashboard/routes"
+import { corsMiddleware } from "./middleware/cors"
+import { loggingMiddleware } from "./middleware/logging"
+import { authRateLimit, apiRateLimit } from "./middleware/rate-limit"
+import { errorHandler } from "./middleware/error-handler"
+import { auth } from "./modules/auth"
+import transactionsRoutes from "./modules/transactions/routes"
+import categoriesRoutes from "./modules/categories/routes"
+import dashboardRoutes from "./modules/dashboard/routes"
 
 const app = new Hono()
 

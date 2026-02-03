@@ -1,5 +1,5 @@
-import { db } from "@/db"
-import { categories, transactions } from "@/db/schema"
+import { db } from "../../db"
+import { categories, transactions } from "../../db/schema"
 import type {
   CreateCategoryInput,
   UpdateCategoryInput,

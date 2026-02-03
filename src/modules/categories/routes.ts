@@ -1,9 +1,9 @@
 import { Hono } from "hono"
 import { zValidator } from "@hono/zod-validator"
-import { ownerOnlyMiddleware } from "@/modules/auth"
+import { ownerOnlyMiddleware } from "../auth"
 import { categoryService } from "./service"
 import { createCategorySchema, updateCategorySchema } from "./schema"
-import { success, error } from "@/lib/response"
+import { success, error } from "../../lib/response"
 
 const app = new Hono()
 
