@@ -6,14 +6,14 @@ export const loggingMiddleware = createMiddleware(
     const method = c.req.method
     const path = c.req.path
 
-    console.log(`[${new Date().toISOString()}] ${method} ${path} - Started`)
+    console.info(`[${new Date().toISOString()}] ${method} ${path} - Started`)
 
     await next()
 
     const duration = Date.now() - start
     const status = c.res.status
 
-    console.log(
+    console.info(
       `[${new Date().toISOString()}] ${method} ${path} - ${status} (${duration}ms)`,
     )
   },

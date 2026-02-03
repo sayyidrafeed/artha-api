@@ -20,6 +20,21 @@ app.get("/", async (c) => {
 })
 
 /**
+ * GET /categories/:id
+ * Get a single category
+ */
+app.get("/:id", async (c) => {
+  const id = c.req.param("id")
+  const category = await categoryService.getById(id)
+
+  if (!category) {
+    return error(c, "NOT_FOUND", "Category not found", 404)
+  }
+
+  return success(c, category)
+})
+
+/**
  * POST /categories
  * Create a new category
  */

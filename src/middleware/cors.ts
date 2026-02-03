@@ -9,8 +9,9 @@ const allowedOrigins = [
 export const corsMiddleware: MiddlewareHandler = cors({
   origin: (origin): string | null => {
     if (!origin) return "*"
-    if (allowedOrigins.includes(origin)) {
-      return origin
+    // Case-insensitive origin validation
+    if (allowedOrigins.includes(origin.toLowerCase())) {
+      return origin // Return original case
     }
     return null
   },

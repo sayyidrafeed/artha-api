@@ -22,14 +22,14 @@ const defaultCategories = [
 ]
 
 async function seed(): Promise<void> {
-  console.log("Seeding categories...")
+  console.info("Seeding categories...")
 
   for (const category of defaultCategories) {
     await db.insert(categories).values(category).onConflictDoNothing()
   }
 
-  console.log("Categories seeded successfully!")
-  console.log("Note: Owner account should be created via OAuth sign-in")
+  console.info("Categories seeded successfully!")
+  console.info("Note: Owner account should be created via OAuth sign-in")
   process.exit(0)
 }
 

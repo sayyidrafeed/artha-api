@@ -15,7 +15,10 @@ const poolConfig = {
   idleTimeoutMillis: isVercel ? 0 : 30000,
   connectionTimeoutMillis: 5000,
   // Enable SSL for Neon connections (required)
-  ssl: true,
+  // Neon requires specific SSL configuration for serverless environments
+  ssl: {
+    rejectUnauthorized: false, // Required for Neon's SSL certificates
+  },
 }
 
 const pool = new Pool(poolConfig)

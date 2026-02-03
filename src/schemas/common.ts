@@ -41,11 +41,14 @@ export const errorResponseSchema = z.object({
 })
 
 // API response wrapper type helper
-export type ApiResponse<T> = {
+export type ApiResponse<T,> = {
   success: true
   data: T
   meta?: z.infer<typeof paginationMetaSchema>
-} | { success: false; error: z.infer<typeof errorResponseSchema>["error"] }
+} | {
+  success: false
+  error: z.infer<typeof errorResponseSchema>["error"]
+}
 
 // Types
 export type ErrorCode = z.infer<typeof errorCodeSchema>

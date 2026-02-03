@@ -34,9 +34,10 @@ const authInstance = betterAuth({
       options: {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7, // 7 days
+        domain: ".artha.sayyidrafee.com",
       },
     },
   },

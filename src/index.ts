@@ -28,8 +28,16 @@ app.route("/api/categories", categoriesRoutes)
 app.route("/api/dashboard", dashboardRoutes)
 
 // Health check endpoint
-app.get("/health", (c) => {
-  return c.json({ status: "ok", timestamp: new Date().toISOString() })
+app.get("/health", async (c) => {
+  try {
+    return c.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      version: "1.0.0",
+    })
+  } catch {
+    return c.json({ status: "unhealthy" }, 503)
+  }
 })
 
 export default app
