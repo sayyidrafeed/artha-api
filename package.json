@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "bun run --watch src/index.ts",
@@ -22,10 +22,11 @@
     "check": "bun run typecheck && bun run lint && bun run format:check",
     "ci:install": "npm ci",
     "ci:build": "npm run build",
+    "ci:start": "node dist/index.js",
     "ci:test": "bun test"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.0",
+    "@neondatabase/serverless": "^0.10.0",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.7",
@@ -33,10 +34,15 @@
   },
   "devDependencies": {
     "@hono/zod-validator": "^0.4.3",
-    "@types/node": "^20.0.0",
-    "drizzle-kit": "^0.30.0",
+    "@types/node": "^24.0.0",
+    "drizzle-kit": "^0.31.4",
     "oxlint": "^0.15.0",
     "oxfmt": "^0.1.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.7.0"
+  },
+  "overrides": {
+    "@hono/zod-validator": {
+      "zod": "$zod"
+    }
   }
 }
