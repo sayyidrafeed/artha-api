@@ -41,8 +41,8 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Bun
-bun.lockb
+# npm (we use bun)
+package-lock.json
 
 # Drizzle
 drizzle/migrations/*.sql

@@ -8,7 +8,7 @@
 
 **Repository**: artha-api  
 **Framework**: Hono 4.11.7 on Vercel Functions  
-**Runtime**: Bun (development), Node.js (production)  
+**Runtime**: Bun (development and production)  
 **Authentication**: Better Auth 1.4.18 (owner-only)  
 **Database**: Neon PostgreSQL with Drizzle ORM 0.45.1
 
@@ -49,12 +49,6 @@ All code MUST pass oxlint with the following strict rules:
 }
 ```
 
-**Before committing, run:**
-```bash
-bun run lint
-bun run lint:fix
-```
-
 ### oxfmt Formatting (MANDATORY)
 All code MUST be formatted with oxfmt:
 
@@ -72,9 +66,17 @@ All code MUST be formatted with oxfmt:
 }
 ```
 
-**Before committing, run:**
+### Pre-commit Hooks (Husky)
+Linting and formatting are enforced via husky pre-commit hook:
+- `bun run typecheck` - TypeScript type checking
+- `bun run lint` - oxlint linting
+- `bun run format:check` - oxfmt format verification
+
+These run automatically before every commit. Manual runs:
 ```bash
-bun run format
+bun run check  # Run all checks
+bun run lint:fix  # Auto-fix lint issues
+bun run format  # Auto-format code
 ```
 
 ## Project Structure
@@ -100,8 +102,11 @@ artha-api/
 │   │   ├── response.ts      # Standardized responses
 │   │   └── currency.ts      # Currency conversion
 │   └── index.ts             # Hono app entry
+├── .husky/
+│   └── pre-commit           # Pre-commit hook
 ├── .oxlintrc.json
 ├── .oxfmt.json
+├── vercel.json              # Minimal Vercel config
 └── package.json
 ```
 
@@ -360,68 +365,55 @@ export function dollarsToCents(dollars: number): number {
 const amountCents = dollarsToCents(25.99); // 2599
 ```
 
-## Deployment Constraints (Vercel)
+## Deployment (Vercel)
 
-### Build Toolchain
-- **Bundler**: tsup (esbuild-based)
-- **Path Aliases**: Resolved at build time by tsup
-- **Output**: Single ESM bundle in dist/
-- **Build Command**: `npm run build`
-- **CI Build Command**: `npm run ci:build` (includes type check + build)
+### Zero-Config Deployment
+This project uses Vercel's auto-detection with Bun:
 
-### Build Configuration
 ```json
 {
-  "version": 2,
-  "buildCommand": "npm run ci:build",
-  "outputDirectory": "dist",
-  "framework": null,
-  "installCommand": "npm ci",
-  "env": {
-    "NODE_VERSION": "24.x",
-    "NODE_OPTIONS": "--enable-source-maps --no-warnings"
-  },
-  "functions": {
-    "dist/index.js": {
-      "memory": 256,
-      "maxDuration": 10
-    }
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.js"
-    }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "bunVersion": "1.x"
 }
 ```
+
+**How it works:**
+1. Vercel detects `bun.lockb` → runs `bun install`
+2. Vercel finds `src/index.ts` exporting Hono app → runs as Vercel Function
+3. `bunVersion: "1.x"` → Runs with Bun runtime (not Node.js)
+
+**No build step required** - Vercel runs TypeScript directly.
 
 ### Environment Variables in Vercel
 - All environment variables MUST be set in Vercel dashboard
 - `NODE_ENV` is automatically set to "production"
 - `VERCEL_URL` is available for dynamic URLs
 
-### Cold Start Optimization
-- Keep global scope lean
-- Lazy-load heavy dependencies
-- Use connection pooling for database
+### Database Migrations
+Migrations are handled separately from deployments:
+```bash
+# Generate migration from schema changes
+bun run db:generate
+
+# Push schema to database (development)
+bun run db:push
+
+# Run migrations (production)
+bun run db:migrate
+```
+
+**Best Practice**: Run migrations manually or via a separate CI job before deploying new code that depends on schema changes.
 
 ## Testing Requirements
 
 ### Before Committing
-1. Run `bun run check` (typecheck + lint + format)
-2. Ensure no oxlint errors
-3. Ensure all files are formatted with oxfmt
-4. Test critical paths manually
+Pre-commit hook automatically runs:
+1. `bun run typecheck` - TypeScript compilation check
+2. `bun run lint` - oxlint linting
+3. `bun run format:check` - oxfmt formatting check
 
-### CI/CD Checks
-- oxlint MUST pass
-- oxfmt check MUST pass
-- TypeScript compilation MUST pass
+### Manual Testing
+Test critical paths manually before pushing.
 
 ## File Naming Conventions
 

@@ -2,14 +2,9 @@
   "name": "artha-api",
   "version": "1.0.0",
   "type": "module",
-  "engines": {
-    "node": "24.x"
-  },
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "build": "tsup",
-    "build:check": "tsc --noEmit",
-    "start": "node dist/index.js",
+    "start": "bun run src/index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -21,10 +16,7 @@
     "format:check": "oxfmt . --check",
     "typecheck": "tsc --noEmit",
     "check": "bun run typecheck && bun run lint && bun run format:check",
-    "ci:install": "npm ci",
-    "ci:build": "npm run build:check && npm run build",
-    "ci:start": "node dist/index.js",
-    "ci:test": "bun test"
+    "prepare": "husky"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.0",
@@ -36,16 +28,11 @@
   },
   "devDependencies": {
     "@hono/zod-validator": "^0.4.3",
-    "@types/node": "^24.0.0",
+    "bun-types": "^1.3.8",
     "drizzle-kit": "^0.31.4",
+    "husky": "^9.1.7",
     "oxfmt": "^0.1.0",
     "oxlint": "^0.15.0",
-    "tsup": "^8.5.1",
     "typescript": "^5.7.0"
-  },
-  "overrides": {
-    "@hono/zod-validator": {
-      "zod": "$zod"
-    }
   }
 }

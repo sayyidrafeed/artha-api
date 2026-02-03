@@ -1,21 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "npm run ci:build",
-  "outputDirectory": "dist",
-  "framework": null,
-  "installCommand": "npm ci",
-  "env": {
-    "NODE_VERSION": "24.x",
-    "NODE_OPTIONS": "--enable-source-maps --no-warnings"
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/dist/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.js"
-    }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "bunVersion": "1.x"
 }
