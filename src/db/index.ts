@@ -1,37 +1,46 @@
 import { Pool } from "@neondatabase/serverless"
+
 import { drizzle } from "drizzle-orm/neon-serverless"
+
 import * as schema from "./schema"
 
-// Vercel serverless-optimized connection configuration
-// Neon PostgreSQL requires special handling in serverless environments
-const isVercel = process.env.VERCEL === "1"
+import type { Env } from "../env"
 
-const poolConfig = {
-  connectionString: process.env.DATABASE_URL,
-  // Vercel serverless: Use single connection to avoid connection exhaustion
-  // Local/Bun dev: Allow multiple connections for better performance
-  max: isVercel ? 1 : 10,
-  // Disable idle timeout in serverless (connections managed per-request)
-  idleTimeoutMillis: isVercel ? 0 : 30000,
-  connectionTimeoutMillis: 5000,
-  // Enable SSL for Neon connections (required)
-  // Neon requires specific SSL configuration for serverless environments
-  ssl: {
-    rejectUnauthorized: false, // Required for Neon's SSL certificates
-  },
-}
+/**
+ * Creates a fresh database instance for each request.
+ * IMPORTANT: Do NOT cache database instances globally in Cloudflare Workers.
+ * Database connections created in one request context cannot be
+ * accessed from another request's handler due to Cloudflare's isolation model.
+ */
 
-const pool = new Pool(poolConfig)
+export function getDb(env: Env) {
+  const connectionString = env.DATABASE_URL
 
-export const db = drizzle(pool, { schema })
+  const poolConfig = {
+    connectionString,
 
-// Graceful shutdown for non-serverless environments
-// Vercel handles this automatically via function lifecycle
-if (!isVercel) {
-  process.on("beforeExit", async (): Promise<void> => {
-    await pool.end()
-  })
+    // Cloudflare Workers: Use single connection per request
+
+    max: 1,
+
+    // Disable idle timeout (connections managed per-request)
+
+    idleTimeoutMillis: 0,
+
+    connectionTimeoutMillis: 5000,
+
+    // Enable SSL for Neon connections (required)
+
+    ssl: {
+      rejectUnauthorized: false, // Required for Neon's SSL certificates
+    },
+  }
+
+  const pool = new Pool(poolConfig)
+
+  return drizzle(pool, { schema })
 }
 
 // Export schema for use in migrations
+
 export { schema }

@@ -1,0 +1,12 @@
+name = "artha-api"
+main = "src/index.ts"
+compatibility_date = "2026-01-31"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Uncomment if using Hyperdrive for database connection pooling
+# [hyperdrives]
+#   binding = "HYPERDRIVE"
+#   id = "your-hyperdrive-id"

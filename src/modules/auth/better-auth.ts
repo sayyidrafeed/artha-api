@@ -1,50 +1,72 @@
 import { betterAuth } from "better-auth"
+
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { db } from "../../db"
 
-const authInstance = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-  }),
-  secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL!,
+import { getDb } from "../../db"
 
-  // Trusted origins for OAuth callbacks and CSRF protection
-  trustedOrigins: [process.env.FRONTEND_URL || "https://artha.sayyidrafee.com"],
+import type { Env } from "../../env"
 
-  // OAuth Providers
-  socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    },
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-  },
+let authInstance: ReturnType<typeof betterAuth> | null = null
 
-  // Session configuration
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
-  },
+/**
+ * Creates or returns cached auth instance for Cloudflare Workers
+ * Note: We can't cache per-request since better-auth instance is heavy
+ */
 
-  // Cookie configuration
-  cookies: {
-    sessionToken: {
-      name: "artha.session",
-      options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        ...(process.env.COOKIE_DOMAIN && { domain: process.env.COOKIE_DOMAIN }),
+export function getAuth(env: Env) {
+  if (!authInstance) {
+    authInstance = betterAuth({
+      database: drizzleAdapter(getDb(env), {
+        provider: "pg",
+      }),
+
+      secret: env.BETTER_AUTH_SECRET,
+
+      baseURL: env.BETTER_AUTH_URL,
+
+      trustedOrigins: env.FRONTEND_URLS,
+
+      socialProviders: {
+        github: {
+          clientId: env.GITHUB_CLIENT_ID,
+
+          clientSecret: env.GITHUB_CLIENT_SECRET,
+        },
+
+        google: {
+          clientId: env.GOOGLE_CLIENT_ID,
+
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+        },
       },
-    },
-  },
-})
 
-export const auth = authInstance
-export const authHandler = authInstance.handler
+      session: {
+        expiresIn: 60 * 60 * 24 * 7, // 7 days
+
+        updateAge: 60 * 60 * 24, // 1 day
+      },
+
+      cookies: {
+        sessionToken: {
+          name: "artha.session",
+
+          options: {
+            httpOnly: true,
+
+            secure: env.NODE_ENV === "production",
+
+            sameSite: "lax",
+
+            path: "/",
+
+            maxAge: 60 * 60 * 24 * 7, // 7 days
+          },
+        },
+      },
+    })
+  }
+
+  return authInstance
+}
+
+export const authHandler = (env: Env) => getAuth(env).handler

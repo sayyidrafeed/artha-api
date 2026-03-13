@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "bun:test"
+
 import { CategoryService } from "@/modules/categories/service"
+
 import type { CreateCategoryInput } from "@/modules/categories/schema"
 
 describe("CategoryService", () => {
@@ -21,21 +23,27 @@ describe("CategoryService", () => {
     it("should create a category with valid data", async () => {
       const input: CreateCategoryInput = {
         name: "Test Category",
+
         type: "expense",
       }
 
       const result = await categoryService.create(input)
 
       expect(result).toBeDefined()
+
       expect(result.id).toBeDefined()
+
       expect(result.name).toBe(input.name)
+
       expect(result.type).toBe(input.type)
+
       expect(result.createdAt).toBeDefined()
     })
 
     it("should create income category", async () => {
       const input: CreateCategoryInput = {
         name: "Salary",
+
         type: "income",
       }
 
@@ -47,6 +55,7 @@ describe("CategoryService", () => {
     it("should create expense category", async () => {
       const input: CreateCategoryInput = {
         name: "Food",
+
         type: "expense",
       }
 
@@ -60,14 +69,18 @@ describe("CategoryService", () => {
     it("should return category by ID", async () => {
       const input: CreateCategoryInput = {
         name: "Test Category",
+
         type: "expense",
       }
 
       const created = await categoryService.create(input)
+
       const found = await categoryService.getById(created.id)
 
       expect(found).toBeDefined()
+
       expect(found?.id).toBe(created.id)
+
       expect(found?.name).toBe(input.name)
     })
 
@@ -81,8 +94,11 @@ describe("CategoryService", () => {
   describe("list", () => {
     beforeEach(async () => {
       // Seed test categories
+
       await categoryService.create({ name: "Food", type: "expense" })
+
       await categoryService.create({ name: "Salary", type: "income" })
+
       await categoryService.create({ name: "Transport", type: "expense" })
     })
 
@@ -104,9 +120,11 @@ describe("CategoryService", () => {
       const result = await categoryService.list()
 
       const hasIncome = result.some((category) => category.type === "income")
+
       const hasExpense = result.some((category) => category.type === "expense")
 
       expect(hasIncome).toBe(true)
+
       expect(hasExpense).toBe(true)
     })
   })
@@ -115,16 +133,20 @@ describe("CategoryService", () => {
     it("should update category name", async () => {
       const input: CreateCategoryInput = {
         name: "Test Category",
+
         type: "expense",
       }
 
       const created = await categoryService.create(input)
+
       const updated = await categoryService.update(created.id, {
         name: "Updated Category",
       })
 
       expect(updated).toBeDefined()
+
       expect(updated?.name).toBe("Updated Category")
+
       expect(updated?.type).toBe("expense") // Unchanged
     })
 
@@ -139,15 +161,18 @@ describe("CategoryService", () => {
     it("should update only provided fields", async () => {
       const input: CreateCategoryInput = {
         name: "Test Category",
+
         type: "expense",
       }
 
       const created = await categoryService.create(input)
+
       const updated = await categoryService.update(created.id, {
         name: "New Name",
       })
 
       expect(updated?.name).toBe("New Name")
+
       expect(updated?.type).toBe("expense") // Unchanged
     })
   })
@@ -156,21 +181,26 @@ describe("CategoryService", () => {
     it("should delete category without transactions", async () => {
       const input: CreateCategoryInput = {
         name: "Test Category",
+
         type: "expense",
       }
 
       const created = await categoryService.create(input)
+
       const deleted = await categoryService.delete(created.id)
 
       expect(deleted).toBe(true)
 
       const found = await categoryService.getById(created.id)
+
       expect(found).toBeNull()
     })
 
     it("should return false for category with transactions", async () => {
       // This test assumes a transaction was created for this category
+
       // In a real test, you would first create a transaction
+
       const result = await categoryService.delete(
         "category-with-transactions-id",
       )

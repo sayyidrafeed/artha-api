@@ -1,37 +1,28 @@
 import { createMiddleware } from "hono/factory"
-import { auth } from "./better-auth"
+
+import { getAuth } from "./better-auth"
+
 import { error } from "../../lib/response"
 
-// Owner email from environment
-const OWNER_EMAIL = process.env.OWNER_EMAIL!
+import { EnvSchema } from "../../env"
 
-declare module "hono" {
-  interface ContextVariableMap {
-    session: {
-      user: {
-        id: string
-        email: string
-        name: string
-        image?: string | null
-      }
-      session: {
-        id: string
-        token: string
-        expiresAt: Date
-        createdAt: Date
-        updatedAt: Date
-        userId: string
-        ipAddress?: string | null
-        userAgent?: string | null
-      }
-    }
-  }
-}
+import type { AppEnv } from "../../factory"
 
-export const ownerOnlyMiddleware = createMiddleware(
+export const ownerOnlyMiddleware = createMiddleware<AppEnv>(
   async (c, next): Promise<Response | void> => {
+    // Validate environment variables
+
+    const envResult = EnvSchema.safeParse(c.env)
+
+    if (!envResult.success) {
+      return error(c, "INTERNAL_ERROR", "Server misconfiguration", 500)
+    }
+
+    const env = envResult.data
+
     // Get session from Better Auth
-    const session = await auth.api.getSession({
+
+    const session = await getAuth(env).api.getSession({
       headers: c.req.raw.headers,
     })
 
@@ -40,16 +31,15 @@ export const ownerOnlyMiddleware = createMiddleware(
     }
 
     // Verify this is the owner account
-    if (session.user.email !== OWNER_EMAIL) {
+
+    if (session.user.email !== env.OWNER_EMAIL) {
       return error(c, "FORBIDDEN", "Access restricted to owner only", 403)
     }
 
     // Store session in context
+
     c.set("session", session)
 
     await next()
   },
 )
-
-// Re-export auth handler from better-auth.ts
-export { authHandler } from "./better-auth"

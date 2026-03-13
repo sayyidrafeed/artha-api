@@ -3,7 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "bun:test"
+
 import { DashboardService } from "@/modules/dashboard/service"
+
 import type { DashboardFilter } from "@/modules/dashboard/schema"
 
 describe("DashboardService", () => {
@@ -21,16 +23,22 @@ describe("DashboardService", () => {
     it("should return monthly summary", async () => {
       const filter: DashboardFilter = {
         year: 2024,
+
         month: 1,
       }
 
       const result = await dashboardService.getSummary(filter)
 
       expect(result).toBeDefined()
+
       expect(result.year).toBe(2024)
+
       expect(result.month).toBe(1)
+
       expect(typeof result.incomeCents).toBe("number")
+
       expect(typeof result.expenseCents).toBe("number")
+
       expect(typeof result.balanceCents).toBe("number")
     })
 
@@ -42,13 +50,16 @@ describe("DashboardService", () => {
       const result = await dashboardService.getSummary(filter)
 
       expect(result).toBeDefined()
+
       expect(result.year).toBe(2024)
+
       expect(result.month).toBeUndefined()
     })
 
     it("should calculate balance correctly", async () => {
       const filter: DashboardFilter = {
         year: 2024,
+
         month: 1,
       }
 
@@ -60,13 +71,16 @@ describe("DashboardService", () => {
     it("should handle zero transactions", async () => {
       const filter: DashboardFilter = {
         year: 2025,
+
         month: 1,
       }
 
       const result = await dashboardService.getSummary(filter)
 
       expect(result.incomeCents).toBe(0)
+
       expect(result.expenseCents).toBe(0)
+
       expect(result.balanceCents).toBe(0)
     })
   })
@@ -75,15 +89,20 @@ describe("DashboardService", () => {
     it("should return category breakdown", async () => {
       const filter: DashboardFilter = {
         year: 2024,
+
         month: 1,
       }
 
       const result = await dashboardService.getByCategory(filter)
 
       expect(result).toBeDefined()
+
       expect(result.year).toBe(2024)
+
       expect(result.month).toBe(1)
+
       expect(Array.isArray(result.income)).toBe(true)
+
       expect(Array.isArray(result.expense)).toBe(true)
     })
 
@@ -95,13 +114,16 @@ describe("DashboardService", () => {
       const result = await dashboardService.getByCategory(filter)
 
       expect(result).toBeDefined()
+
       expect(result.year).toBe(2024)
+
       expect(result.month).toBeUndefined()
     })
 
     it("should return category aggregation with correct structure", async () => {
       const filter: DashboardFilter = {
         year: 2024,
+
         month: 1,
       }
 
@@ -109,21 +131,33 @@ describe("DashboardService", () => {
 
       if (result.income.length > 0) {
         const incomeItem = result.income[0]
+
         expect(incomeItem).toHaveProperty("categoryId")
+
         expect(incomeItem).toHaveProperty("categoryName")
+
         expect(incomeItem).toHaveProperty("type")
+
         expect(incomeItem).toHaveProperty("totalCents")
+
         expect(incomeItem).toHaveProperty("transactionCount")
+
         expect(incomeItem.type).toBe("income")
       }
 
       if (result.expense.length > 0) {
         const expenseItem = result.expense[0]
+
         expect(expenseItem).toHaveProperty("categoryId")
+
         expect(expenseItem).toHaveProperty("categoryName")
+
         expect(expenseItem).toHaveProperty("type")
+
         expect(expenseItem).toHaveProperty("totalCents")
+
         expect(expenseItem).toHaveProperty("transactionCount")
+
         expect(expenseItem.type).toBe("expense")
       }
     })
@@ -131,6 +165,7 @@ describe("DashboardService", () => {
     it("should sort categories by totalCents descending", async () => {
       const filter: DashboardFilter = {
         year: 2024,
+
         month: 1,
       }
 
@@ -143,18 +178,21 @@ describe("DashboardService", () => {
       }
 
       checkSorted(result.income)
+
       checkSorted(result.expense)
     })
 
     it("should handle zero transactions", async () => {
       const filter: DashboardFilter = {
         year: 2025,
+
         month: 1,
       }
 
       const result = await dashboardService.getByCategory(filter)
 
       expect(result.income).toHaveLength(0)
+
       expect(result.expense).toHaveLength(0)
     })
   })

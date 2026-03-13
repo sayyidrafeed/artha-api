@@ -1,67 +1,78 @@
 import { createMiddleware } from "hono/factory"
+
 import { Redis } from "@upstash/redis"
 
-// Initialize Upstash Redis if environment variables are available
-// Fallback to in-memory store for development
-const upstashRedis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
-    : null
+import type { AppEnv } from "../factory"
 
 interface RateLimitRecord {
   count: number
+
   resetTime: number
 }
 
 // In-memory fallback for development (not suitable for serverless production)
+
 const inMemoryStore = new Map<string, RateLimitRecord>()
 
 interface RateLimitOptions {
   windowMs: number
+
   maxRequests: number
 }
 
 interface RateLimitResult {
   allowed: boolean
+
   remaining: number
+
   resetTime: number
 }
 
 async function checkRateLimit(
+  redis: Redis | null,
+
   key: string,
+
   windowMs: number,
+
   maxRequests: number,
 ): Promise<RateLimitResult> {
   const now = Date.now()
+
   const resetTime = now + windowMs
 
-  if (upstashRedis) {
+  if (redis) {
     // Use Upstash Redis for distributed rate limiting
+
     const countKey = `ratelimit:${key}`
-    const result = await upstashRedis.incr(countKey)
+
+    const result = await redis.incr(countKey)
 
     if (result === 1) {
       // First request in window, set expiry
-      await upstashRedis.expire(countKey, Math.ceil(windowMs / 1000))
+
+      await redis.expire(countKey, Math.ceil(windowMs / 1000))
     }
 
     const count = result
+
     const remaining = Math.max(0, maxRequests - count)
+
     const allowed = count <= maxRequests
 
     return { allowed, remaining, resetTime }
   } else {
     // Fallback to in-memory store (development only)
+
     const record = inMemoryStore.get(key)
 
     if (!record || record.resetTime < now) {
       inMemoryStore.set(key, {
         count: 1,
+
         resetTime,
       })
+
       return { allowed: true, remaining: maxRequests - 1, resetTime }
     }
 
@@ -70,22 +81,40 @@ async function checkRateLimit(
     }
 
     record.count++
+
     return { allowed: true, remaining: maxRequests - record.count, resetTime }
   }
 }
 
-export function rateLimit(options: RateLimitOptions) {
-  return createMiddleware(async (c, next): Promise<Response | void> => {
+function createRateLimiter(options: RateLimitOptions) {
+  return createMiddleware<AppEnv>(async (c, next): Promise<Response | void> => {
+    // Initialize Upstash Redis if environment variables are available
+
+    const upstashRedis =
+      c.env.UPSTASH_REDIS_REST_URL && c.env.UPSTASH_REDIS_REST_TOKEN
+        ? new Redis({
+            url: c.env.UPSTASH_REDIS_REST_URL,
+
+            token: c.env.UPSTASH_REDIS_REST_TOKEN,
+          })
+        : null
+
     const ip =
       c.req.header("x-forwarded-for") ||
       c.req.header("cf-connecting-ip") ||
       "unknown"
+
     const path = c.req.path
+
     const key = `ratelimit:${ip}:${path}`
 
     const result = await checkRateLimit(
+      upstashRedis,
+
       key,
+
       options.windowMs,
+
       options.maxRequests,
     )
 
@@ -93,30 +122,38 @@ export function rateLimit(options: RateLimitOptions) {
       return c.json(
         {
           success: false,
+
           error: {
             code: "RATE_LIMITED",
+
             message: "Too many requests, please try again later",
           },
         },
+
         429,
       )
     }
 
     // Add rate limit headers
+
     c.header("X-RateLimit-Limit", options.maxRequests.toString())
+
     c.header("X-RateLimit-Remaining", result.remaining.toString())
+
     c.header("X-RateLimit-Reset", new Date(result.resetTime).toISOString())
 
     await next()
   })
 }
 
-export const authRateLimit = rateLimit({
+export const authRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
+
   maxRequests: 5,
 })
 
-export const apiRateLimit = rateLimit({
+export const apiRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
+
   maxRequests: 100,
 })

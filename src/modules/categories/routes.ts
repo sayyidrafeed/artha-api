@@ -1,21 +1,31 @@
-import { Hono } from "hono"
+import { createApp } from "../../factory"
+
 import { zValidator } from "@hono/zod-validator"
+
 import { ownerOnlyMiddleware } from "../auth"
+
 import { categoryService } from "./service"
+
 import { createCategorySchema, updateCategorySchema } from "./schema"
+
 import { success, error } from "../../lib/response"
 
-const app = new Hono()
+import type { AppEnv } from "../../factory"
+
+const app = createApp<AppEnv>()
 
 // Apply owner-only middleware to all routes
+
 app.use("*", ownerOnlyMiddleware)
 
 /**
  * GET /categories
  * List all categories
  */
+
 app.get("/", async (c) => {
-  const categories = await categoryService.list()
+  const categories = await categoryService.list(c.env)
+
   return success(c, categories)
 })
 
@@ -23,9 +33,11 @@ app.get("/", async (c) => {
  * GET /categories/:id
  * Get a single category
  */
+
 app.get("/:id", async (c) => {
   const id = c.req.param("id")
-  const category = await categoryService.getById(id)
+
+  const category = await categoryService.getById(c.env, id)
 
   if (!category) {
     return error(c, "NOT_FOUND", "Category not found", 404)
@@ -38,9 +50,11 @@ app.get("/:id", async (c) => {
  * POST /categories
  * Create a new category
  */
+
 app.post("/", zValidator("json", createCategorySchema), async (c) => {
   const input = c.req.valid("json")
-  const category = await categoryService.create(input)
+
+  const category = await categoryService.create(c.env, input)
 
   return success(c, category)
 })
@@ -49,10 +63,13 @@ app.post("/", zValidator("json", createCategorySchema), async (c) => {
  * PUT /categories/:id
  * Update a category
  */
+
 app.put("/:id", zValidator("json", updateCategorySchema), async (c) => {
   const id = c.req.param("id")
+
   const input = c.req.valid("json")
-  const category = await categoryService.update(id, input)
+
+  const category = await categoryService.update(c.env, id, input)
 
   if (!category) {
     return error(c, "NOT_FOUND", "Category not found", 404)
@@ -65,15 +82,20 @@ app.put("/:id", zValidator("json", updateCategorySchema), async (c) => {
  * DELETE /categories/:id
  * Delete a category
  */
+
 app.delete("/:id", async (c) => {
   const id = c.req.param("id")
-  const deleted = await categoryService.delete(id)
+
+  const deleted = await categoryService.delete(c.env, id)
 
   if (!deleted) {
     return error(
       c,
+
       "VALIDATION_ERROR",
+
       "Cannot delete category with existing transactions",
+
       400,
     )
   }
