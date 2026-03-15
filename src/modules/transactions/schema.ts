@@ -75,7 +75,7 @@ export const transactionSchema = z.object({
 
   categoryType: transactionTypeSchema.nullable(),
 
-  amountCents: z.number().int().positive(),
+  amountRupiah: z.number().int().positive(),
 
   description: z.string(),
 

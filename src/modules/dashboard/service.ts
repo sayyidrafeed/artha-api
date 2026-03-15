@@ -13,11 +13,11 @@ interface MonthlySummary {
 
   month: number | undefined
 
-  incomeCents: number
+  incomeRupiah: number
 
-  expenseCents: number
+  expenseRupiah: number
 
-  balanceCents: number
+  balanceRupiah: number
 }
 
 interface CategoryAggregation {
@@ -27,7 +27,7 @@ interface CategoryAggregation {
 
   type: "income" | "expense" | null
 
-  totalCents: number
+  totalRupiah: number
 
   transactionCount: number
 }
@@ -79,9 +79,9 @@ export class DashboardService {
     const result = await db
 
       .select({
-        incomeCents: sql<number>`SUM(CASE WHEN ${categories.type} = 'income' THEN ${transactions.amountCents} ELSE 0 END)`,
+        incomeRupiah: sql<number>`SUM(CASE WHEN ${categories.type} = 'income' THEN ${transactions.amountRupiah} ELSE 0 END)`,
 
-        expenseCents: sql<number>`SUM(CASE WHEN ${categories.type} = 'expense' THEN ${transactions.amountCents} ELSE 0 END)`,
+        expenseRupiah: sql<number>`SUM(CASE WHEN ${categories.type} = 'expense' THEN ${transactions.amountRupiah} ELSE 0 END)`,
       })
 
       .from(transactions)
@@ -90,22 +90,22 @@ export class DashboardService {
 
       .where(dateCondition)
 
-    const incomeCents = result[0]?.incomeCents ?? 0
+    const incomeRupiah = result[0]?.incomeRupiah ?? 0
 
-    const expenseCents = result[0]?.expenseCents ?? 0
+    const expenseRupiah = result[0]?.expenseRupiah ?? 0
 
-    const balanceCents = incomeCents - expenseCents
+    const balanceRupiah = incomeRupiah - expenseRupiah
 
     return {
       year,
 
       month,
 
-      incomeCents,
+      incomeRupiah,
 
-      expenseCents,
+      expenseRupiah,
 
-      balanceCents,
+      balanceRupiah,
     }
   }
 
@@ -155,7 +155,7 @@ export class DashboardService {
 
         type: categories.type,
 
-        totalCents: sql<number>`SUM(${transactions.amountCents})`,
+        totalRupiah: sql<number>`SUM(${transactions.amountRupiah})`,
 
         transactionCount: sql<number>`COUNT(*)`,
       })
@@ -168,7 +168,7 @@ export class DashboardService {
 
       .groupBy(categories.id, categories.name, categories.type)
 
-      .orderBy(sql`SUM(${transactions.amountCents}) DESC`)
+      .orderBy(sql`SUM(${transactions.amountRupiah}) DESC`)
 
     const income = result.filter((r) => r.type === "income")
 

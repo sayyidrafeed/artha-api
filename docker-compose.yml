@@ -1,0 +1,170 @@
+# =============================================================================
+# Artha Backend - Docker Compose for Local PostgreSQL Development
+# =============================================================================
+# PostgreSQL 15+ with persistent volumes, health checks, pgAdmin, and security
+# best practices for local development environments.
+# =============================================================================
+
+version: "3.8"
+
+services:
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: artha-postgres
+    restart: unless-stopped
+    
+    # Security: Run as non-root user
+    user: "999:999"  # postgres:postgres
+    
+    environment:
+      # Database Configuration
+      POSTGRES_DB: ${POSTGRES_DB:-artha}
+      POSTGRES_USER: ${POSTGRES_USER:-artha}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-artha_dev_secure_2024}
+      
+      # Performance Tuning for Development
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+      
+      # Connection Pool Settings (compatible with common ORMs)
+      PGOPTIONS: "-c max_connections=100 -c shared_buffers=256MB -c effective_cache_size=768MB"
+    
+    ports:
+      # Localhost binding for security (not 0.0.0.0)
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    
+    volumes:
+      # Persistent named volume for data durability
+      - postgres_data:/var/lib/postgresql/data
+      
+      # Initialization scripts (executed on first run)
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      
+      # Custom PostgreSQL configuration
+      - ./docker/postgres/conf:/etc/postgresql/conf.d:ro
+    
+    networks:
+      - artha-network
+    
+    # Health check for dependency ordering
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    # Resource limits for development machines
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service_name"
+        env: "OS_VERSION"
+
+  # ===========================================================================
+  # pgAdmin - Database Administration Tool
+  # ===========================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: artha-pgadmin
+    restart: unless-stopped
+    
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@artha.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      
+      # Pre-configure server connection
+      PGADMIN_CONFIG_AUTO_DISCOVER_SERVERS: "True"
+    
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    
+    volumes:
+      # Persistent storage for pgAdmin configuration
+      - pgadmin_data:/var/lib/pgadmin
+      
+      # Server configuration
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    
+    networks:
+      - artha-network
+    
+    # Depends on PostgreSQL being healthy
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ===========================================================================
+  # Database Migration Runner (Optional - runs once then exits)
+  # ===========================================================================
+  # Uncomment to run migrations on startup
+  # migrations:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/migrations/Dockerfile
+  #   container_name: artha-migrations
+  #   environment:
+  #     DATABASE_URL: postgres://${POSTGRES_USER:-artha}:${POSTGRES_PASSWORD:-artha_dev_secure_2024}@postgres:5432/${POSTGRES_DB:-artha}?sslmode=disable
+  #   networks:
+  #     - artha-network
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   profiles:
+  #     - migrations
+
+# =============================================================================
+# Named Volumes for Data Persistence
+# =============================================================================
+volumes:
+  postgres_data:
+    name: artha-postgres-data
+    driver: local
+  
+  pgadmin_data:
+    name: artha-pgadmin-data
+    driver: local
+
+# =============================================================================
+# Custom Bridge Network for Isolation
+# =============================================================================
+networks:
+  artha-network:
+    name: artha-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1

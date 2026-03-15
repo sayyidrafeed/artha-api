@@ -173,7 +173,7 @@ export const transactions = pgTable(
 
       .references(() => categories.id, { onDelete: "restrict" }),
 
-    amountCents: integer("amount_cents").notNull(),
+    amountRupiah: integer("amount_rupiah").notNull(),
 
     description: varchar("description", { length: 500 }).notNull(),
 

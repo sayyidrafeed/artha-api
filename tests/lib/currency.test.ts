@@ -66,26 +66,21 @@ describe("Currency Utilities", () => {
   })
 
   describe("formatCurrency", () => {
-    it("should format cents as USD currency string", () => {
-      expect(formatCurrency(2599)).toBe("$2,599.00")
+    it("should format rupiah as IDR currency string", () => {
+      // IDR uses Indonesian locale with Rp symbol, no decimals
+      expect(formatCurrency(2599)).toBe("Rp2.599")
 
-      expect(formatCurrency(10000)).toBe("$10,000.00")
+      expect(formatCurrency(10000)).toBe("Rp10.000")
 
-      expect(formatCurrency(100)).toBe("$100.00")
+      expect(formatCurrency(100)).toBe("Rp100")
     })
 
     it("should handle zero", () => {
-      expect(formatCurrency(0)).toBe("$0.00")
+      expect(formatCurrency(0)).toBe("Rp0")
     })
 
     it("should handle negative values", () => {
-      expect(formatCurrency(-2599)).toBe("-$2,599.00")
-    })
-
-    it("should format with custom currency code", () => {
-      expect(formatCurrency(2599, "EUR")).toBe("€2,599.00")
-
-      expect(formatCurrency(2599, "GBP")).toBe("£2,599.00")
+      expect(formatCurrency(-2599)).toBe("-Rp2.599")
     })
   })
 

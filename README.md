@@ -1,6 +1,6 @@
 # Artha - Personal Finance Tracker
 
-**Artha** (Sanskrit: अर्थ, meaning "wealth, prosperity") is a production-ready personal finance tracker built with a modular monolith architecture optimized for maintainability, extensibility, and Vercel deployment.
+**Artha** (Sanskrit: अर्थ, meaning "wealth, prosperity") is a production-ready personal finance tracker built with a modular monolith architecture optimized for maintainability, extensibility, and Cloudflare Workers deployment.
 
 ## Repositories
 
@@ -24,7 +24,7 @@ graph TB
     end
     
     subgraph "API Layer - Modular Monolith"
-        HONO[Hono 4.11.7]
+        HONO[Hono 4.11.7<br/>Cloudflare Workers]
         
         subgraph "Auth Module"
             BA[Better Auth 1.4.18]
@@ -64,6 +64,7 @@ graph TB
 | State Management | TanStack Query | 5.90.20 |
 | Validation | Zod | 4.3.6 |
 | Backend Framework | Hono | 4.11.7 |
+| Deployment Runtime | Cloudflare Workers | - |
 | Authentication | Better Auth | 1.4.18 |
 | Database | Neon PostgreSQL | 18 |
 | ORM | Drizzle ORM | 0.45.1 |
@@ -71,21 +72,21 @@ graph TB
 | Linter | oxlint | ^0.15.0 |
 | Formatter | oxfmt | ^0.1.0 |
 
-## Development Toolchain: Bun + oxlint + oxfmt
+## Development Toolchain: Bun + Wrangler + oxlint + oxfmt
 
-This project uses **Bun** for development workflows while retaining **npm** for production deployments:
+This project uses **Bun** for development workflows and **Wrangler** for Cloudflare Workers deployment:
 
 - **Bun**: Fast package management, development server, and test runner
+- **Wrangler**: Cloudflare Workers CLI for local development and deployment
 - **oxlint**: High-performance linting with strict TypeScript rules
 - **oxfmt**: Fast, consistent code formatting
-- **npm**: Production builds and CI/CD compatibility
 
-### Why Bun + oxlint/oxfmt?
+### Why Bun + Wrangler?
 
 - **Speed**: Bun installs dependencies 3x faster than npm
+- **Edge Runtime**: Cloudflare Workers provides global low-latency deployment
 - **Performance**: oxlint is 50-100x faster than ESLint
 - **Consistency**: oxfmt provides deterministic formatting
-- **Compatibility**: npm ensures production deployment compatibility
 
 ## Single-User Owner-Only Access
 
@@ -99,42 +100,72 @@ Artha is designed for **single-owner access only**. There is no public registrat
 ## Quick Start
 
 ### Prerequisites
+
 - [Bun](https://bun.sh) installed
-- Node.js 20+ (for production builds)
+- [Wrangler](https://developers.cloudflare.com/workers/wrangler/) CLI (`bun add -g wrangler`)
 - Neon PostgreSQL database
 - GitHub OAuth App (for authentication)
 - Google OAuth App (optional)
-- Vercel account
+- Cloudflare account
 
-### 1. Clone Repositories
+### 1. Clone Repository
 
 ```bash
-# Clone frontend
-git clone https://github.com/sayyidrafeed/artha-web.git
-cd artha-web
-
-# Clone backend
 git clone https://github.com/sayyidrafeed/artha-api.git
-cd ../artha-api
+cd artha-api
 ```
 
-### 2. Backend Setup (artha-api)
+### 2. Backend Setup
+
+#### Option A: Local PostgreSQL with Docker (Recommended)
+
+The project includes a complete Docker Compose setup for local PostgreSQL development:
 
 ```bash
-cd artha-api
+# Copy Docker environment file
+cp .env.docker .env.docker.local
 
+# Start PostgreSQL and pgAdmin
+docker-compose up -d
+
+# Verify services are running
+docker-compose ps
+
+# Access:
+# - PostgreSQL: localhost:5432 (user: artha, password: artha_dev_secure_2024)
+# - pgAdmin: http://localhost:5050 (email: admin@artha.local, password: admin)
+```
+
+Update your `.dev.vars`:
+
+```bash
+DATABASE_URL="postgresql://artha:artha_dev_secure_2024@localhost:5432/artha?sslmode=disable"
+```
+
+See [DOCKER.md](DOCKER.md) for complete Docker setup documentation.
+
+#### Option B: Neon PostgreSQL (Cloud)
+
+```bash
 # Install dependencies with Bun
 bun install
 
-# Create environment file
-cp .env.example .env.local
+# Create development variables file
+cp .dev.vars.example .dev.vars
 
-# Edit .env.local with your values:
-# DATABASE_URL=postgresql://...
+# Edit .dev.vars with your Neon database URL:
+# DATABASE_URL=postgresql://user:pass@neon-host/db?sslmode=require
+```
+
+#### Continue Backend Setup
+
+```bash
+# Edit .dev.vars with your values:
 # BETTER_AUTH_SECRET=...
 # GITHUB_CLIENT_ID=...
 # GITHUB_CLIENT_SECRET=...
 # OWNER_EMAIL=your-email@example.com
+# FRONTEND_URLS=http://localhost:5173
 
 # Run database migrations
 bun run db:migrate
@@ -144,39 +175,23 @@ bun run db:migrate
 # Seed default categories
 bun run db:seed
 
-# Start development server with hot reload
-bun run dev
-```
-
-### 3. Frontend Setup (artha-web)
-
-```bash
-cd artha-web
-
-# Install dependencies with Bun
-bun install
-
-# Create environment file
-cp .env.example .env.local
-
-# Edit .env.local with your values:
-# VITE_API_URL=https://artha.sayyidrafee.com/api
-# VITE_BETTER_AUTH_URL=https://artha.sayyidrafee.com/api
-
-# Start development server
+# Start local development server
 bun run dev
 ```
 
 ## Development Workflow
 
-### Bun Commands (Development)
+### Bun + Wrangler Commands
 
 ```bash
 # Install dependencies
 bun install
 
-# Start development server
+# Start local development server (wrangler dev)
 bun run dev
+
+# Deploy to Cloudflare Workers
+bun run deploy
 
 # Run linter
 bun run lint
@@ -198,56 +213,51 @@ bun run check
 
 # Run tests
 bun test
-```
 
-### npm Commands (Production/CI)
-
-```bash
-# Install dependencies (CI/production)
-npm ci
-
-# Build for production
-npm run build
-
-# Start production server (backend)
-npm start
+# Database commands
+bun run db:generate  # Generate migration from schema changes
+bun run db:migrate   # Run migrations
+bun run db:push      # Push schema to database (development)
+bun run db:studio    # Open Drizzle Studio
+bun run db:seed      # Seed default categories
 ```
 
 ## Project Structure
 
 ```
-artha/
-├── artha-api/              # Backend repository
-│   ├── src/
-│   │   ├── modules/       # Feature modules
-│   │   │   ├── auth/      # Better Auth integration
-│   │   │   ├── transactions/
-│   │   │   ├── categories/
-│   │   │   └── dashboard/
-│   │   ├── db/            # Drizzle ORM
-│   │   └── lib/           # Utilities
-│   ├── .oxlintrc.json     # oxlint configuration
-│   ├── .oxfmt.json        # oxfmt configuration
-│   ├── bun.lockb          # Bun lockfile
-│   └── drizzle/           # Migrations
-│
-├── artha-web/             # Frontend repository
-│   ├── src/
-│   │   ├── modules/       # Feature modules
-│   │   ├── components/    # UI components
-│   │   └── lib/           # Utilities
-│   ├── .oxlintrc.json     # oxlint configuration
-│   ├── .oxfmt.json        # oxfmt configuration
-│   ├── bun.lockb          # Bun lockfile
-│   └── public/
-│
-└── plans/                 # Documentation
-    ├── architecture.md
-    ├── api-endpoints.md
-    ├── database-schema.md
-    ├── backend-structure.md
-    ├── frontend-architecture.md
-    └── todo.md
+artha-api/
+├── src/
+│   ├── modules/              # Feature modules (modular monolith)
+│   │   ├── auth/            # Better Auth integration + owner guard
+│   │   ├── transactions/    # Transaction CRUD
+│   │   ├── categories/      # Category CRUD
+│   │   └── dashboard/       # Aggregations
+│   ├── db/
+│   │   ├── index.ts         # Drizzle connection
+│   │   ├── schema.ts        # Application tables
+│   │   └── seed.ts          # Database seeding
+│   ├── middleware/
+│   │   ├── cors.ts          # CORS middleware
+│   │   ├── error-handler.ts # Error handling
+│   │   ├── logging.ts       # Request logging
+│   │   └── rate-limit.ts    # Rate limiting
+│   ├── lib/
+│   │   ├── response.ts      # Standardized responses
+│   │   └── currency.ts      # Currency conversion
+│   ├── schemas/
+│   │   ├── auth.ts          # Auth schemas
+│   │   └── common.ts        # Common schemas
+│   ├── env.ts               # Environment validation (Zod)
+│   ├── factory.ts           # Hono factory with Cloudflare typing
+│   └── index.ts             # Hono app entry
+├── .dev.vars                # Local development variables
+├── wrangler.toml            # Cloudflare Workers configuration
+├── drizzle.config.ts        # Drizzle ORM configuration
+├── drizzle/
+│   └── migrations/           # Database migrations
+├── .oxlintrc.json           # oxlint configuration
+├── .oxfmt.json              # oxfmt configuration
+└── package.json
 ```
 
 ## Key Features
@@ -258,12 +268,12 @@ artha/
 - **Categories**: Income/expense categorization
 - **Pagination**: Date range filters and pagination
 - **Security**: CSRF protection, rate limiting, httpOnly cookies
-- **Performance**: SWR caching, connection pooling
+- **Performance**: Edge deployment, connection pooling
 - **Code Quality**: oxlint + oxfmt for consistent, error-free code
 
 ## Environment Variables
 
-### Backend (.env.local)
+### Backend (.dev.vars)
 
 ```bash
 # Database
@@ -271,7 +281,7 @@ DATABASE_URL="postgresql://user:pass@neon-host/db?sslmode=require"
 
 # Better Auth
 BETTER_AUTH_SECRET="your-better-auth-secret-min-32-characters"
-BETTER_AUTH_URL="https://artha.sayyidrafee.com/api"
+BETTER_AUTH_URL="https://artha.sayyidrafee.com"
 
 # OAuth Providers
 GITHUB_CLIENT_ID="your-github-client-id"
@@ -282,10 +292,13 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 # Owner Configuration
 OWNER_EMAIL="owner@sayyidrafee.com"
 
-# CORS
-FRONTEND_URL="https://artha.sayyidrafee.com"
+# Frontend URLs (comma-separated for multiple)
+FRONTEND_URLS="https://artha.sayyidrafee.com,http://localhost:5173"
 
-# Rate Limiting (Upstash Redis optional)
+# Optional: Hyperdrive for database connection pooling
+HYPERDRIVE_ID="your-hyperdrive-id"
+
+# Optional: Upstash Redis for rate limiting
 UPSTASH_REDIS_REST_URL=""
 UPSTASH_REDIS_REST_TOKEN=""
 ```
@@ -294,10 +307,10 @@ UPSTASH_REDIS_REST_TOKEN=""
 
 ```bash
 # API URL
-VITE_API_URL="https://artha.sayyidrafee.com/api"
+VITE_API_URL="https://artha.sayyidrafee.com"
 
 # Better Auth
-VITE_BETTER_AUTH_URL="https://artha.sayyidrafee.com/api"
+VITE_BETTER_AUTH_URL="https://artha.sayyidrafee.com"
 
 # Owner email (for client-side verification)
 VITE_OWNER_EMAIL="owner@sayyidrafee.com"
@@ -308,20 +321,29 @@ VITE_OWNER_EMAIL="owner@sayyidrafee.com"
 ### oxlint (.oxlintrc.json)
 
 Strict TypeScript rules including:
+
 - Explicit function return types
 - No explicit `any` types
 - Strict boolean expressions
 - Consistent type imports
-- React hooks rules
 
 ### oxfmt (.oxfmt.json)
 
 Consistent formatting:
+
 - 100 character print width
 - 2-space indentation
 - Single quotes
 - Trailing commas (ES5)
 - LF line endings
+
+### Pre-commit Hooks (Husky)
+
+Linting and formatting are enforced via husky pre-commit hook:
+
+- `bun run typecheck` - TypeScript type checking
+- `bun run lint` - oxlint linting
+- `bun run format:check` - oxfmt format verification
 
 ## CI/CD Pipeline
 
@@ -344,6 +366,13 @@ GitHub Actions workflows use Bun for speed:
 
 - name: Type check
   run: bun run typecheck
+
+- name: Deploy to Cloudflare
+  uses: cloudflare/wrangler-action@v3
+  with:
+    apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    command: deploy
 ```
 
 ## IDE Configuration
@@ -364,34 +393,69 @@ GitHub Actions workflows use Bun for speed:
 ### Recommended Extensions
 
 - **oxc.oxc-vscode**: oxlint and oxfmt support
-- **bradlc.vscode-tailwindcss**: Tailwind CSS IntelliSense
+- **Cloudflare Workers**: Wrangler support
 
 ## Architecture Decisions
 
 ### 1. Modular Monolith Pattern
+
 - Feature-based module organization
 - Clear boundaries between auth, transactions, categories, and dashboard
 - Easy to extract into microservices if needed
 
 ### 2. Single-Owner Access Model
+
 - No `user_id` columns in application tables
 - Owner verification at authentication layer
 - Simplified data model and queries
 
-### 3. Better Auth over JWT
+### 3. Cloudflare Workers Deployment
+
+- Edge deployment for global low latency
+- No cold starts, instant scaling
+- Built-in observability with Cloudflare Logs and Traces
+
+### 4. Better Auth over JWT
+
 - Built-in OAuth support (GitHub, Google)
 - Server-side session management
 - CSRF protection out of the box
 
-### 4. Bun + oxlint/oxfmt
+### 5. Bun + Wrangler + oxlint/oxfmt
+
 - Faster development workflow
 - Better code quality enforcement
-- npm for production compatibility
+- Edge-ready deployment
 
-### 5. Monetary Values as Integer Cents
+### 6. Monetary Values as Integer Cents
+
 - Store: `Math.round(dollars * 100)` → cents
 - Display: `cents / 100` → dollars
 - Prevents floating-point errors
+
+## Cloudflare Workers Configuration
+
+### wrangler.toml
+
+```toml
+name = "artha-api"
+main = "src/index.ts"
+compatibility_date = "2026-01-31"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+```
+
+### Key Differences from Vercel
+
+| Aspect | Vercel | Cloudflare Workers |
+|--------|--------|-------------------|
+| Runtime | Node.js | Edge (V8) |
+| Env vars | `process.env` | `c.env` |
+| App creation | `new Hono()` | `createApp()` |
+| DB connection | Global pool | Per-request |
+| Deployment | `vercel deploy` | `wrangler deploy` |
 
 ## API Documentation
 
@@ -403,24 +467,25 @@ See [plans/database-schema.md](plans/database-schema.md) for database documentat
 
 ## Deployment
 
-### Backend (Vercel Functions)
+### Backend (Cloudflare Workers)
 
 ```bash
-cd artha-api
+# Install dependencies
+bun install
 
-# Install with npm for production
-npm ci
+# Run all checks
+bun run check
 
-# Deploy
-vercel --prod
+# Deploy to Cloudflare Workers
+bun run deploy
 ```
 
-### Frontend (Vercel Edge)
+### Frontend (Vercel)
 
 ```bash
 cd artha-web
 
-# Install with npm for production
+# Install dependencies
 npm ci
 
 # Deploy
@@ -430,7 +495,7 @@ vercel --prod
 ### Post-Deployment Checklist
 
 1. Configure OAuth apps with production callback URLs
-2. Set `OWNER_EMAIL` to your verified email
+2. Set `OWNER_EMAIL` to your verified email in Cloudflare dashboard
 3. Run database migrations
 4. Seed default categories
 5. Test OAuth sign-in flow
@@ -441,9 +506,10 @@ vercel --prod
 - [Architecture](plans/architecture.md) - System architecture and design decisions
 - [API Endpoints](plans/api-endpoints.md) - Complete API documentation
 - [Database Schema](plans/database-schema.md) - Database design and migrations
-- [Backend Structure](plans/backend-structure.md) - Backend implementation with Bun/oxlint
-- [Frontend Architecture](plans/frontend-architecture.md) - Frontend implementation with Bun/oxlint
+- [Backend Structure](plans/backend-structure.md) - Backend implementation details
+- [Frontend Architecture](plans/frontend-architecture.md) - Frontend implementation details
 - [Shared Schemas](plans/shared-schemas.md) - Zod schema definitions
+- [Vercel to Cloudflare Migration](plans/vercel-to-cloudflare-migration.md) - Migration guide
 
 ## Future Expansion
 
@@ -453,6 +519,7 @@ The architecture supports future features:
 - **Data Export**: CSV export endpoint
 - **Charts**: Additional dashboard aggregations
 - **Recurring Transactions**: Scheduled transaction support
+- **Hyperdrive**: Enable connection pooling for better performance
 
 All features must maintain backward compatibility with existing API contracts.
 

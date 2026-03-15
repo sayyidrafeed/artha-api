@@ -4,15 +4,33 @@
 
 import { describe, it, expect, beforeEach, afterEach } from "bun:test"
 
-import { DashboardService } from "@/modules/dashboard/service"
+import { dashboardService } from "@/modules/dashboard/service"
 
 import type { DashboardFilter } from "@/modules/dashboard/schema"
 
+import type { Env } from "@/env"
+
 describe("DashboardService", () => {
-  let dashboardService: DashboardService
+  // Mock environment for testing
+  const mockEnv: Env = {
+    DATABASE_URL:
+      process.env.DATABASE_URL ||
+      "postgresql://test:test@localhost:5432/artha_test",
+    BETTER_AUTH_SECRET:
+      process.env.BETTER_AUTH_SECRET || "test-secret-key-min-32-characters",
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL || "http://localhost:3000/api",
+    OWNER_EMAIL: process.env.OWNER_EMAIL || "test-owner@example.com",
+    FRONTEND_URLS: ["http://localhost:3000"],
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID || "test-github-client-id",
+    GITHUB_CLIENT_SECRET:
+      process.env.GITHUB_CLIENT_SECRET || "test-github-client-secret",
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "test-google-client-id",
+    GOOGLE_CLIENT_SECRET:
+      process.env.GOOGLE_CLIENT_SECRET || "test-google-client-secret",
+  }
 
   beforeEach(() => {
-    dashboardService = new DashboardService()
+    // Setup if needed
   })
 
   afterEach(() => {
@@ -27,7 +45,7 @@ describe("DashboardService", () => {
         month: 1,
       }
 
-      const result = await dashboardService.getSummary(filter)
+      const result = await dashboardService.getSummary(mockEnv, filter)
 
       expect(result).toBeDefined()
 
@@ -35,11 +53,11 @@ describe("DashboardService", () => {
 
       expect(result.month).toBe(1)
 
-      expect(typeof result.incomeCents).toBe("number")
+      expect(typeof result.incomeRupiah).toBe("number")
 
-      expect(typeof result.expenseCents).toBe("number")
+      expect(typeof result.expenseRupiah).toBe("number")
 
-      expect(typeof result.balanceCents).toBe("number")
+      expect(typeof result.balanceRupiah).toBe("number")
     })
 
     it("should return yearly summary when month is omitted", async () => {
@@ -47,7 +65,7 @@ describe("DashboardService", () => {
         year: 2024,
       }
 
-      const result = await dashboardService.getSummary(filter)
+      const result = await dashboardService.getSummary(mockEnv, filter)
 
       expect(result).toBeDefined()
 
@@ -63,9 +81,11 @@ describe("DashboardService", () => {
         month: 1,
       }
 
-      const result = await dashboardService.getSummary(filter)
+      const result = await dashboardService.getSummary(mockEnv, filter)
 
-      expect(result.balanceCents).toBe(result.incomeCents - result.expenseCents)
+      expect(result.balanceRupiah).toBe(
+        result.incomeRupiah - result.expenseRupiah,
+      )
     })
 
     it("should handle zero transactions", async () => {
@@ -75,13 +95,13 @@ describe("DashboardService", () => {
         month: 1,
       }
 
-      const result = await dashboardService.getSummary(filter)
+      const result = await dashboardService.getSummary(mockEnv, filter)
 
-      expect(result.incomeCents).toBe(0)
+      expect(result.incomeRupiah).toBe(0)
 
-      expect(result.expenseCents).toBe(0)
+      expect(result.expenseRupiah).toBe(0)
 
-      expect(result.balanceCents).toBe(0)
+      expect(result.balanceRupiah).toBe(0)
     })
   })
 
@@ -93,7 +113,7 @@ describe("DashboardService", () => {
         month: 1,
       }
 
-      const result = await dashboardService.getByCategory(filter)
+      const result = await dashboardService.getByCategory(mockEnv, filter)
 
       expect(result).toBeDefined()
 
@@ -111,7 +131,7 @@ describe("DashboardService", () => {
         year: 2024,
       }
 
-      const result = await dashboardService.getByCategory(filter)
+      const result = await dashboardService.getByCategory(mockEnv, filter)
 
       expect(result).toBeDefined()
 
@@ -127,7 +147,7 @@ describe("DashboardService", () => {
         month: 1,
       }
 
-      const result = await dashboardService.getByCategory(filter)
+      const result = await dashboardService.getByCategory(mockEnv, filter)
 
       if (result.income.length > 0) {
         const incomeItem = result.income[0]
@@ -138,7 +158,7 @@ describe("DashboardService", () => {
 
         expect(incomeItem).toHaveProperty("type")
 
-        expect(incomeItem).toHaveProperty("totalCents")
+        expect(incomeItem).toHaveProperty("totalRupiah")
 
         expect(incomeItem).toHaveProperty("transactionCount")
 
@@ -154,7 +174,7 @@ describe("DashboardService", () => {
 
         expect(expenseItem).toHaveProperty("type")
 
-        expect(expenseItem).toHaveProperty("totalCents")
+        expect(expenseItem).toHaveProperty("totalRupiah")
 
         expect(expenseItem).toHaveProperty("transactionCount")
 
@@ -162,18 +182,18 @@ describe("DashboardService", () => {
       }
     })
 
-    it("should sort categories by totalCents descending", async () => {
+    it("should sort categories by totalRupiah descending", async () => {
       const filter: DashboardFilter = {
         year: 2024,
 
         month: 1,
       }
 
-      const result = await dashboardService.getByCategory(filter)
+      const result = await dashboardService.getByCategory(mockEnv, filter)
 
       const checkSorted = (items: typeof result.income) => {
         for (let i = 1; i < items.length; i++) {
-          expect(items[i].totalCents <= items[i - 1].totalCents).toBe(true)
+          expect(items[i].totalRupiah <= items[i - 1].totalRupiah).toBe(true)
         }
       }
 
@@ -189,7 +209,7 @@ describe("DashboardService", () => {
         month: 1,
       }
 
-      const result = await dashboardService.getByCategory(filter)
+      const result = await dashboardService.getByCategory(mockEnv, filter)
 
       expect(result.income).toHaveLength(0)
 

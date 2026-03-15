@@ -12,7 +12,7 @@ import type {
 
 import type { TransactionFilter } from "./schema"
 
-import { dollarsToCents } from "../../lib/currency"
+import { toRupiah } from "../../lib/currency"
 
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm"
 
@@ -63,7 +63,7 @@ export class TransactionService {
 
         categoryType: categories.type,
 
-        amountCents: transactions.amountCents,
+        amountRupiah: transactions.amountRupiah,
 
         description: transactions.description,
 
@@ -119,7 +119,7 @@ export class TransactionService {
 
         categoryType: categories.type,
 
-        amountCents: transactions.amountCents,
+        amountRupiah: transactions.amountRupiah,
 
         description: transactions.description,
 
@@ -148,7 +148,7 @@ export class TransactionService {
   async create(env: Env, input: CreateTransactionInput): Promise<Transaction> {
     const db = getDb(env)
 
-    const amountCents = dollarsToCents(input.amount)
+    const amountRupiah = toRupiah(input.amount)
 
     const result = await db
 
@@ -157,7 +157,7 @@ export class TransactionService {
       .values({
         categoryId: input.categoryId,
 
-        amountCents,
+        amountRupiah,
 
         description: input.description,
 
@@ -195,7 +195,7 @@ export class TransactionService {
     const updateData: Record<string, unknown> = {}
 
     if (input.amount !== undefined) {
-      updateData.amountCents = dollarsToCents(input.amount)
+      updateData.amountRupiah = toRupiah(input.amount)
     }
 
     if (input.description !== undefined) {
