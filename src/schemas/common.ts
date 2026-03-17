@@ -25,9 +25,9 @@ export const paginationMetaSchema = z.object({
 
   limit: z.number().int().positive(),
 
-  total: z.number().int(),
+  total: z.number().int().nonnegative(),
 
-  totalPages: z.number().int(),
+  totalPages: z.number().int().nonnegative(),
 })
 
 // Standard API success response
@@ -52,7 +52,7 @@ export const errorResponseSchema = z.object({
   error: z.object({
     code: errorCodeSchema,
 
-    message: z.string(),
+    message: z.string().min(1),
 
     details: z.unknown().optional(),
   }),

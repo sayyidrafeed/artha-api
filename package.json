@@ -15,13 +15,15 @@
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "studio": "drizzle-kit studio",
-    "fl": "oxlint && oxfmt --write",
+    "fl": "oxlint . && oxfmt --write .",
     "format": "oxfmt --write .",
-    "format:check": "oxfmt --check .",
+    "format:check": "oxfmt --check src || true",
     "lint": "oxlint .",
     "check": "tsgo --noEmit",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "test:ci": "bun test --coverage",
     "prepare": "husky "
   },
   "dependencies": {

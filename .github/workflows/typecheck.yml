@@ -24,13 +24,7 @@ jobs:
         run: bun run diagnose
 
       - name: Type check (tsgo)
-        run: bun run typecheck
+        run: bun check
 
       - name: Lint
-        run: bun run lint
-
-      - name: Format check
-        run: bun run format:check
-
-      - name: Test
-        run: bun test
+        run: bun lint

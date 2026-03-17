@@ -205,14 +205,17 @@ bun run format
 # Check formatting
 bun run format:check
 
-# Type check
+# Type check (includes test files)
 bun run typecheck
 
-# Run all checks
+# Run all checks (lint + format + typecheck)
 bun run check
 
-# Run tests
+# Run tests (TDD: write tests first, then implement)
 bun test
+
+# Run tests in watch mode
+bun test --watch
 
 # Database commands
 bun run db:generate  # Generate migration from schema changes
@@ -220,6 +223,31 @@ bun run db:migrate   # Run migrations
 bun run db:push      # Push schema to database (development)
 bun run db:studio    # Open Drizzle Studio
 bun run db:seed      # Seed default categories
+```
+
+### TDD Workflow
+
+This project follows Test-Driven Development:
+
+1. **Write failing tests first** - Create test files in [`tests/`](tests/) matching the source module structure
+2. **Run tests** - Use `bun test` to see tests fail
+3. **Implement the feature** - Write the minimum code to make tests pass
+4. **Refactor** - Improve code while keeping tests green
+5. **Type check** - Run `bun check` to ensure type safety across all files
+
+Test file organization mirrors source structure:
+
+```
+backend/
+├── src/
+│   ├── modules/
+│   │   └── auth/
+│   │       └── owner-guard.ts    # Source implementation
+│   └── ...
+└── tests/
+    └── modules/
+        └── auth/
+            └── owner-guard.test.ts  # Tests (TDD)
 ```
 
 ## Project Structure
@@ -337,11 +365,55 @@ Consistent formatting:
 - Trailing commas (ES5)
 - LF line endings
 
+### Test-Driven Development (TDD)
+
+This project follows TDD principles with comprehensive test coverage:
+
+```bash
+# Run tests
+bun test
+
+# Type check (includes test files)
+bun check
+
+# Run type check only
+bun run typecheck
+```
+
+#### Type Safety in Tests
+
+All test files are type-checked via `bun check` before running tests. This ensures:
+
+- **Early Error Detection**: Type errors in tests are caught during `bun check` before running tests
+- **Type Safety Across Entire Project**: Ensures test files correctly use your types and schemas
+- **Self-Documenting Tests**: Strong types in tests make the expected behavior clearer
+- **Refactoring Safety**: When changing types, tests will fail type check if they're incompatible
+
+#### Test Type Definitions
+
+The project includes custom type definitions for Bun's test framework in [`types/bun-test.d.ts`](types/bun-test.d.ts). These extend the base `bun:test` types with:
+
+- Full `expect()` API including `.not` modifier for negative assertions
+- All standard matchers (`toBe`, `toEqual`, `toContain`, etc.)
+
+Example test usage:
+
+```typescript
+import { describe, it, expect } from "bun:test"
+
+describe("example", () => {
+  it("should pass", () => {
+    expect(value).toBe(expected)
+    expect(value).not.toBe(unexpected)
+  })
+})
+```
+
 ### Pre-commit Hooks (Husky)
 
 Linting and formatting are enforced via husky pre-commit hook:
 
-- `bun run typecheck` - TypeScript type checking
+- `bun run typecheck` - TypeScript type checking (including tests)
 - `bun run lint` - oxlint linting
 - `bun run format:check` - oxfmt format verification
 

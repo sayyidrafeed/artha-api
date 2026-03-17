@@ -15,9 +15,9 @@ export const monthlySummarySchema = z.object({
 
   month: z.number().int().optional(),
 
-  incomeRupiah: z.number().int(),
+  incomeRupiah: z.number().int().nonnegative(),
 
-  expenseRupiah: z.number().int(),
+  expenseRupiah: z.number().int().nonnegative(),
 
   balanceRupiah: z.number().int(),
 })
@@ -31,9 +31,9 @@ export const categoryAggregationSchema = z.object({
 
   type: z.enum(["income", "expense"]).nullable(),
 
-  totalRupiah: z.number().int(),
+  totalRupiah: z.number().int().nonnegative(),
 
-  transactionCount: z.number().int(),
+  transactionCount: z.number().int().nonnegative(),
 })
 
 // Dashboard by-category response

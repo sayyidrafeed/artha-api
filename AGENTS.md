@@ -7,10 +7,12 @@
 # Artha Backend - AI Assistant Guidelines
 
 **Repository**: artha-api  
-**Framework**: Hono 4.11.7 on Vercel Functions  
+**Project Type**: Personal Expense Tracking Application  
+**Framework**: Hono 4.11.7 on Cloudflare Workers  
 **Runtime**: Bun (development and production)  
 **Authentication**: Better Auth 1.4.18 (owner-only)  
 **Database**: Neon PostgreSQL with Drizzle ORM 0.45.1
+**Development Style**: TDD (Test-Driven Development) with code harness tests
 
 ## Critical Constraints
 
@@ -29,24 +31,21 @@
 ## Code Style Enforcement
 
 ### oxlint Rules (MANDATORY)
-All code MUST pass oxlint with the following strict rules:
+All code MUST pass oxlint. The current configuration in `.oxlintrc.json`:
 
-```json
-{
-  "@typescript-eslint/explicit-function-return-type": "error",
-  "@typescript-eslint/no-explicit-any": "error",
-  "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-  "@typescript-eslint/strict-boolean-expressions": "error",
-  "@typescript-eslint/no-floating-promises": "error",
-  "@typescript-eslint/await-thenable": "error",
-  "@typescript-eslint/prefer-nullish-coalescing": "error",
-  "@typescript-eslint/prefer-optional-chain": "error",
-  "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
-  "no-console": ["warn", { "allow": ["error", "warn", "info"] }],
-  "no-debugger": "error",
-  "prefer-const": "error",
-  "no-var": "error"
-}
+- **max-lines**: Disabled globally (`"off"`)
+- **no-unused-vars**: Error (except in tests folder)
+- **no-explicit-any**: Error (except in tests folder)
+- All other TypeScript and oxc rules are set to "warn" or "error"
+
+**Tests folder special rules** (`tests/**`):
+- `max-lines`: "off"
+- `no-explicit-any`: "off"
+- `no-unused-vars`: "off"
+
+Run linting:
+```bash
+cd backend && bun run lint
 ```
 
 ### oxfmt Formatting (MANDATORY)
@@ -68,9 +67,9 @@ All code MUST be formatted with oxfmt:
 
 ### Pre-commit Hooks (Husky)
 Linting and formatting are enforced via husky pre-commit hook:
-- `bun run typecheck` - TypeScript type checking
-- `bun run lint` - oxlint linting
-- `bun run format:check` - oxfmt format verification
+- `bun check` - TypeScript type checking
+- `bun lint` - oxlint linting
+- `bun format:check` - oxfmt format verification
 
 These run automatically before every commit. Manual runs:
 ```bash
@@ -406,16 +405,32 @@ bun run db:migrate
 
 **Best Practice**: Run migrations manually or via a separate CI job before deploying new code that depends on schema changes.
 
-## Testing Requirements
+### Testing Requirements (TDD)
 
-### Before Committing
-Pre-commit hook automatically runs:
-1. `bun run typecheck` - TypeScript compilation check
-2. `bun run lint` - oxlint linting
-3. `bun run format:check` - oxfmt formatting check
+This project uses **Test-Driven Development** with Bun's built-in test runner.
 
-### Manual Testing
-Test critical paths manually before pushing.
+**Test Location**: `tests/` folder
+
+**Running Tests:**
+```bash
+cd backend
+bun test              # Run all tests
+bun test --watch     # Run tests in watch mode
+bun test --coverage  # Run tests with coverage
+```
+
+**Pre-commit Hooks (Husky)**
+Linting and formatting are enforced via husky pre-commit hook:
+- `bun run typecheck` - TypeScript type checking
+- `bun run lint` - oxlint linting
+- `bun run format:check` - oxfmt format verification
+
+These run automatically before every commit. Manual runs:
+```bash
+bun run check  # Run all checks
+bun run lint:fix  # Auto-fix lint issues
+bun run format  # Auto-format code
+```
 
 ## File Naming Conventions
 

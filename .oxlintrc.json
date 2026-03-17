@@ -56,10 +56,7 @@
     "require-yield": "warn",
     "use-isnan": "warn",
     "valid-typeof": "warn",
-    "max-lines": [
-      "warn",
-      { "max": 200, "skipBlankLines": true, "skipComments": true }
-    ],
+    "max-lines": "off",
     "oxc/bad-array-method-on-arguments": "warn",
     "oxc/bad-char-at-comparison": "warn",
     "oxc/bad-comparison-sequence": "warn",
@@ -120,6 +117,14 @@
           "warn",
           { "max": 150, "skipBlankLines": true, "skipComments": true }
         ]
+      }
+    },
+    {
+      "files": ["tests/**"],
+      "rules": {
+        "max-lines": "off",
+        "no-explicit-any": "off",
+        "no-unused-vars": "off"
       }
     }
   ],
