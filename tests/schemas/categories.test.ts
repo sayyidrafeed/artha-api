@@ -145,7 +145,11 @@ describe("categorySchema", () => {
   })
 
   it("should reject missing name", () => {
-    const input = { id: validCategory.id, type: "income", createdAt: new Date() }
+    const input = {
+      id: validCategory.id,
+      type: "income",
+      createdAt: new Date(),
+    }
     const result = categorySchema.safeParse(input)
     expect(result.success).toBe(false)
   })

@@ -25,8 +25,14 @@ describe("corsMiddleware", () => {
   describe("Environment validation", () => {
     it("should return 500 when env is invalid", async () => {
       const c = {
-        req: { path: "/api/test", method: "GET", header: () => null, raw: { headers: new Headers() } },
-        json: (data: unknown, status?: number) => new Response(JSON.stringify(data), { status }),
+        req: {
+          path: "/api/test",
+          method: "GET",
+          header: () => null,
+          raw: { headers: new Headers() },
+        },
+        json: (data: unknown, status?: number) =>
+          new Response(JSON.stringify(data), { status }),
         env: {}, // Missing required env vars
       } as any
 
@@ -42,8 +48,14 @@ describe("corsMiddleware", () => {
 
     it("should return 500 when FRONTEND_URLS is empty", async () => {
       const c = {
-        req: { path: "/api/test", method: "GET", header: () => null, raw: { headers: new Headers() } },
-        json: (data: unknown, status?: number) => new Response(JSON.stringify(data), { status }),
+        req: {
+          path: "/api/test",
+          method: "GET",
+          header: () => null,
+          raw: { headers: new Headers() },
+        },
+        json: (data: unknown, status?: number) =>
+          new Response(JSON.stringify(data), { status }),
         env: { ...mockEnvValid, FRONTEND_URLS: "" },
       } as any
 
@@ -69,7 +81,7 @@ describe("corsMiddleware", () => {
     it("should parse FRONTEND_URLS from env", () => {
       const envResult = EnvSchema.safeParse(mockEnvValid)
       expect(envResult.success).toBe(true)
-      
+
       if (envResult.success) {
         const urls = envResult.data.FRONTEND_URLS
         expect(urls).toContain("http://localhost:5173")
@@ -81,7 +93,7 @@ describe("corsMiddleware", () => {
       // Test the logic that CORS uses for origin validation
       const origin = "HTTP://LOCALHOST:5173"
       const validOrigins = mockEnvValid.FRONTEND_URLS
-      
+
       // The middleware uses .includes() with lowercase comparison
       const isValid = validOrigins.includes(origin.toLowerCase())
       expect(isValid).toBe(true)
@@ -90,7 +102,7 @@ describe("corsMiddleware", () => {
     it("should reject invalid origin", () => {
       const origin = "http://evil.com"
       const validOrigins = mockEnvValid.FRONTEND_URLS
-      
+
       const isValid = validOrigins.includes(origin.toLowerCase())
       expect(isValid).toBe(false)
     })

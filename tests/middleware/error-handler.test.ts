@@ -91,7 +91,9 @@ describe("errorHandler middleware", () => {
     })
 
     it("should return 400 VALIDATION_ERROR when foreign key constraint error", async () => {
-      const err = new Error("foreign key constraint - referenced id does not exist")
+      const err = new Error(
+        "foreign key constraint - referenced id does not exist",
+      )
       const c = createMockContext(err)
 
       const response = await errorHandler(err, c)
