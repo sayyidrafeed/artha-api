@@ -13,7 +13,10 @@ async function getResponseBody(response: Response) {
 
 describe("authRateLimit middleware", () => {
   // Helper to create mock Hono context
-  const createMockContext = (path: string = "/api/test", ip: string = "127.0.0.1") => {
+  const createMockContext = (
+    path: string = "/api/test",
+    ip: string = "127.0.0.1",
+  ) => {
     return {
       req: {
         path,
@@ -146,7 +149,9 @@ describe("authRateLimit middleware", () => {
     if (result) {
       const body = await getResponseBody(result)
       expect(body.success).toBe(false)
-      expect(body.error.message).toBe("Too many requests, please try again later")
+      expect(body.error.message).toBe(
+        "Too many requests, please try again later",
+      )
     }
   })
 })

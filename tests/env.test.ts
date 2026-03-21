@@ -90,7 +90,10 @@ describe("EnvSchema", () => {
     })
 
     it("should trim whitespace from URLs", () => {
-      const env = { ...validEnv, FRONTEND_URLS: "http://localhost:5173 , http://localhost:3000" }
+      const env = {
+        ...validEnv,
+        FRONTEND_URLS: "http://localhost:5173 , http://localhost:3000",
+      }
       const result = EnvSchema.safeParse(env)
       expect(result.success).toBe(true)
       if (result.success) {
@@ -102,7 +105,10 @@ describe("EnvSchema", () => {
     })
 
     it("should filter empty strings", () => {
-      const env = { ...validEnv, FRONTEND_URLS: "http://localhost:5173,,http://localhost:3000" }
+      const env = {
+        ...validEnv,
+        FRONTEND_URLS: "http://localhost:5173,,http://localhost:3000",
+      }
       const result = EnvSchema.safeParse(env)
       expect(result.success).toBe(true)
       if (result.success) {
@@ -147,7 +153,10 @@ describe("EnvSchema", () => {
 
   describe("Optional fields", () => {
     it("should accept optional UPSTASH_REDIS_REST_URL", () => {
-      const env = { ...validEnv, UPSTASH_REDIS_REST_URL: "https://redis.example.com" }
+      const env = {
+        ...validEnv,
+        UPSTASH_REDIS_REST_URL: "https://redis.example.com",
+      }
       const result = EnvSchema.safeParse(env)
       expect(result.success).toBe(true)
     })
@@ -191,13 +200,19 @@ describe("EnvSchema", () => {
     })
 
     it("should accept postgresql protocol", () => {
-      const env = { ...validEnv, DATABASE_URL: "postgresql://user:pass@localhost:5432/db" }
+      const env = {
+        ...validEnv,
+        DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
+      }
       const result = EnvSchema.safeParse(env)
       expect(result.success).toBe(true)
     })
 
     it("should accept postgres protocol", () => {
-      const env = { ...validEnv, DATABASE_URL: "postgres://user:pass@localhost:5432/db" }
+      const env = {
+        ...validEnv,
+        DATABASE_URL: "postgres://user:pass@localhost:5432/db",
+      }
       const result = EnvSchema.safeParse(env)
       expect(result.success).toBe(true)
     })

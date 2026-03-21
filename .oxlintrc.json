@@ -56,7 +56,6 @@
     "require-yield": "warn",
     "use-isnan": "warn",
     "valid-typeof": "warn",
-    "max-lines": "off",
     "oxc/bad-array-method-on-arguments": "warn",
     "oxc/bad-char-at-comparison": "warn",
     "oxc/bad-comparison-sequence": "warn",
@@ -118,14 +117,6 @@
           { "max": 150, "skipBlankLines": true, "skipComments": true }
         ]
       }
-    },
-    {
-      "files": ["tests/**"],
-      "rules": {
-        "max-lines": "off",
-        "no-explicit-any": "off",
-        "no-unused-vars": "off"
-      }
     }
   ],
   "settings": {
@@ -160,17 +151,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [
-    "src/lib/api/generated/**",
-    "src/components/ui/**",
-    "src/components/ui/sidebar.tsx",
-    "src/components/ui/carousel.tsx",
-    "src/components/ui/dropdown-menu.tsx",
-    "src/components/ui/calendar.tsx",
-    "src/components/ui/form.tsx",
-    "src/components/ui/sheet.tsx",
-    "src/components/ui/dialog.tsx",
-    "src/components/ui/breadcrumb.tsx",
-    "src/components/ui/table.tsx"
-  ]
+  "ignorePatterns": [".agents/**", "src/lib/api/generated/**", "./dist/**", "tests/**"]
 }

@@ -20,10 +20,7 @@ const mockEnv = {
   GOOGLE_CLIENT_SECRET: "google-secret",
 }
 
-const createMockContext = (
-  env: any,
-  headers: Record<string, string> = {},
-) => {
+const createMockContext = (env: any, headers: Record<string, string> = {}) => {
   return {
     req: {
       path: "/api/test",
@@ -46,8 +43,14 @@ describe("ownerOnlyMiddleware", () => {
   describe("Environment validation", () => {
     it("should return 500 when env is invalid", async () => {
       const c = {
-        req: { path: "/api/test", method: "GET", header: () => null, raw: { headers: new Headers() } },
-        json: (data: unknown, status?: number) => new Response(JSON.stringify(data), { status }),
+        req: {
+          path: "/api/test",
+          method: "GET",
+          header: () => null,
+          raw: { headers: new Headers() },
+        },
+        json: (data: unknown, status?: number) =>
+          new Response(JSON.stringify(data), { status }),
         env: {}, // Missing required env vars
       } as any
 

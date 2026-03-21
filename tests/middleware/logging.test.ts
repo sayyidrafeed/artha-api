@@ -12,7 +12,7 @@ describe("loggingMiddleware", () => {
       const method = "GET"
       const path = "/api/test"
       const logMessage = `[${new Date().toISOString()}] ${method} ${path} - Started`
-      
+
       expect(logMessage).toContain("GET")
       expect(logMessage).toContain("/api/test")
       expect(logMessage).toContain("Started")
@@ -23,9 +23,9 @@ describe("loggingMiddleware", () => {
       const path = "/api/transactions"
       const status = 201
       const duration = 150
-      
+
       const logMessage = `[${new Date().toISOString()}] ${method} ${path} - ${status} (${duration}ms)`
-      
+
       expect(logMessage).toContain("POST")
       expect(logMessage).toContain("/api/transactions")
       expect(logMessage).toContain("201")
@@ -62,13 +62,9 @@ describe("loggingMiddleware", () => {
 
   describe("path handling", () => {
     it("should handle API paths", () => {
-      const paths = [
-        "/api/transactions",
-        "/api/categories", 
-        "/api/dashboard"
-      ]
-      
-      paths.forEach(path => {
+      const paths = ["/api/transactions", "/api/categories", "/api/dashboard"]
+
+      paths.forEach((path) => {
         expect(path.startsWith("/api")).toBe(true)
       })
     })
@@ -77,9 +73,9 @@ describe("loggingMiddleware", () => {
       const paths = [
         "/api/v1/transactions",
         "/api/categories/123",
-        "/api/dashboard/summary"
+        "/api/dashboard/summary",
       ]
-      
+
       expect(paths.length).toBe(3)
     })
   })
@@ -90,7 +86,7 @@ describe("loggingMiddleware", () => {
       // Simulate some processing
       const end = Date.now()
       const duration = end - start
-      
+
       expect(duration).toBeGreaterThanOrEqual(0)
     })
 
